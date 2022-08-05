@@ -10,7 +10,6 @@ Organize files with specified term or extension into folders of your choice
 ~ inexistent dir exception  
 ~ open destination directory via notification  
 ~ don't overwrite or update with backup  
-~ log  
 ~ search for name including, starts with  
 ~ search for file size, file including, file metadata.  
 ~ walk and walk exceptions  
