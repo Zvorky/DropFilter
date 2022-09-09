@@ -1,14 +1,19 @@
 [Desktop Entry]
 Encoding=UTF-8
+
 Name=DropFilter
-Comment=v0.5 - Created By Enzo 'Zvorky' Delevatti
-Comment[pt_BR]=v0.5 - Criado por Enzo 'Zvorky' Delevatti
+Name[pt_BR]=DropFilter
+GenericName=File and Directories Organizer
+GenericName[pt_BR]=Organizador de Arquivos e Diretórios
+
+Comment=v0.6 - Created By Enzo 'Zvorky' Delevatti
+Comment[pt_BR]=v0.6 - Criado por Enzo 'Zvorky' Delevatti
+
 Exec=DropFilter
 Icon=/usr/share/icons/hicolor/scalable/apps/DropFilter_icon.svg
+
 Terminal=false
 Type=Application
 Categories=System;Files;
 X-GNOME-Autostart-enabled=true
 X-GNOME-Autostart-Delay=0
-Name[pt_BR]=DropFilter
-GenericName[pt_BR.UTF-8]=File and Directories Organizer
