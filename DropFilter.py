@@ -3,12 +3,25 @@
 #	DropFilter.py
 #   Version 0.6
 
-#	~ Enzo 'Zvorky' Delevatti
-#	August 2022
+''' Enzo Zavorski Delevatti
+||| @Zvorky
+\\\          ___,
+ \\\      .~´    `-,
+  \\°    /  _    _ \.
+   \°   ,\`|_|''|_|´\
+    °    /          /)   °
+        (\  ,    , .\`   |°
+         `) ;`,; `,^,)   ||°
+         ´,´  `,  `  `   |||
+                          \\\
+        December  2022     |||
+                           '''
+
 
 
 import os, sys, time, json
 from gi.repository import Notify, GLib
+
 
 
 #   Recursive make directory
@@ -132,6 +145,7 @@ class Log:
 
 #   Main DropFilter Class
 class DropFilter:
+    #   Global DropFilter attributes
     icon = '/usr/share/icons/hicolor/scalable/apps/DropFilter_icon.svg'
     home = os.getenv('HOME')
     configDir = home + '/.dropfilter'
@@ -208,6 +222,7 @@ class DropFilter:
             with open(DropFilter.configDir + self.config) as config:
                 configjson = json.load(config)
 
+                #   Too much ifs :/
                 if(self.SleepTime != configjson['SleepTime']):
                     self.SleepTime = configjson['SleepTime']
 
@@ -231,8 +246,28 @@ class DropFilter:
             return True
 
 
+    #   Scan Source directory only
+    def scan(self, source, filter):
+        for file in os.listdir(source):
+            #   File ends with
+            for end in self.File[filter[1]]:
+                if(file.endswith(end)):
+
+                    try:
+                        filter[2] = self.Directory[filter[2]]
+
+                    finally:
+                        #   Recursive make directory if destination don't exists
+                        if(not os.path.exists(filter[2])):
+                            mkdir(filter[2])
+                        os.system('mv -n "' + source + '/' + file + '" "' + filter[2] + '/' + file + '"')
+
+                        DropFilter.log.info(file + ' moved to "' + filter[2], 'File Moved')
+
+
     #   Verify existence of files to been filtered
     def verify(self):
+        #   Probably I'll rewrite this sequence, again...
         for filter in self.Filter:
             for source in filter[0]:
 
@@ -242,21 +277,7 @@ class DropFilter:
                 finally:
                     #   Path existence
                     if(os.path.exists(source)):
-                        for file in os.listdir(source):
-                            #   File ends with
-                            for end in self.File[filter[1]]:
-                                if(file.endswith(end)):
-
-                                    try:
-                                        filter[2] = self.Directory[filter[2]]
-
-                                    finally:
-                                        #   Recursive make directory if destination don't exists
-                                        if(not os.path.exists(filter[2])):
-                                            mkdir(filter[2])
-                                        os.system('mv -n "' + source + '/' + file + '" "' + filter[2] + '/' + file + '"')
-
-                                        DropFilter.log.info(file + ' moved to "' + filter[2], 'File Moved')
+                        self.scan(source, filter)
 
                     else:
                         DropFilter.log << source + " don't exists."
