@@ -48,7 +48,7 @@ class Log:
         self.icon = icon
         self.file = path + time.asctime() + '.txt'
 
-        self.makeLog()
+        self.make()
     
 
     # #   Singleton implementation
@@ -60,7 +60,7 @@ class Log:
     #     return Log._instance
 
 
-    def makeLog(self):
+    def make(self):
         #   Make [home]/.dropfilter/logs/
         mkdir(self.file[0:self.file.rfind('/')])
         os.system('touch "' + self.file + '"')
@@ -86,7 +86,7 @@ class Log:
                 log.close()
         
         except FileNotFoundError:
-            self.makeLog()
+            self.make()
             self << text
 
 
@@ -164,14 +164,19 @@ class Config:
                         'Directory': None,
                         'Filter':    None   }
 
-
         #   Config file
         print('\nChecking configuration file...\n\n')
+        if(not self.make()):
+            time.sleep(1)
+            self.log.log('config.json found.')
+            self.load()
 
-        #   Create default config file when it don't exists
+
+    #   Create config file when it don't exists
+    def make(self):
         try:
-            with open(str(Config.dir) + '/' + str(configName) + '.json', 'xt') as config:
-                self.json = {   'SleepTime':    20,
+            with open(str(Config.dir) + '/' + self.name + '.json', 'xt') as config:
+                self.dict = {   'SleepTime':    20,
 
                                 'File':     {   'Any':          [''],
                                                 'Code':         ['.cpp','.h','.py','.sh'],
@@ -191,19 +196,28 @@ class Config:
                                 'Filter':   [   [['Desktop'],   'PDF',  'DropFilter'],
                                                 [['Downloads'], 'Code', 'DropFilter']   ]
                             }
-
-                config.write(json.dumps(self.json))
+                    
+                config.write(json.dumps(self.dict))
                 config.close()
 
                 time.sleep(1)
-                self.log.log(str(Config.dir) + '/' + str(configName) + '.json created.')
+                self.log.log(str(Config.dir) + '/' + self.name + '.json created.')
+                return True
 
         except FileExistsError:
-            time.sleep(1)
-            self.log.log('config.json found.')
-            self.load()
+            return False
+    
+
+    #   save actual config into file
+    def save(self):
+        with open(str(Config.dir) + '/' + self.name + '.json', 'w') as config:
+            config.write(json.dumps(self.dict))
+            config.close()
+            self.log.log(self.name + '.json saved.')
+            
         
     
+    #   Loads a config file into config.dict
     def load(self, config = ''):
         if(config):
             self.name = config
@@ -254,7 +268,7 @@ class Config:
                 return bool(loaded)
 
         except FileNotFoundError:
-            self.log.warn(self.name + '.json not found', self.name.capitalize())
+            self.log.warn(self.name + '.json not found', self.name.capitalize(), False)
             return False
     
 
@@ -292,14 +306,15 @@ class DropFilter:
 
 
     #   Scan Source directory only
-    def scan(self, source, filter):
+    def scan(self, source, f):
+        filter = f
         for file in os.listdir(source):
             #   File ends with
             for end in self.config.files()[filter[1]]:
                 if(file.endswith(end)):
 
                     try:
-                        filter[2] = self.config.directories()[filter[2]]
+                        filter[2] = self.config.directories()[f[2]]
 
                     finally:
                         #   Recursive make directory if destination don't exists
@@ -314,10 +329,11 @@ class DropFilter:
     def verify(self):
         #   Probably I'll rewrite this sequence, again...
         for filter in self.config.filters():
-            for source in filter[0]:
+            for s in filter[0]:
+                source = s
 
                 try:
-                    source = self.config.directories()[source]
+                    source = self.config.directories()[s]
 
                 finally:
                     #   Path existence
@@ -331,7 +347,9 @@ class DropFilter:
     #   Verification loop, count = -1 means infinite
     def loop(self, count = -1):
         while(count):
-            self.config.load()
+            if(not self.config.load()):
+                self.config.save()
+            
             self.verify()
 
             #   Countdown
