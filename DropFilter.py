@@ -59,6 +59,15 @@ class Log:
         if(console):
             os.system('clear')
             print(text)
+    
+
+    # #   Singleton implementation
+    # def __new__(self, *args, **kwargs):
+    #     if not hasattr(Log, "_instance"):
+    #         with Log._instance_lock:
+    #             if not hasattr(Log, "_instance"):
+    #                 Log._instance = object.__new__(self)  
+    #     return Log._instance
 
 
     #   Append to log file
@@ -69,7 +78,7 @@ class Log:
         #
         # except FileNotFoundError:
 
-        #   Make [home]/.dropfilter/tmp/
+        #   Make [home]/.dropfilter/logs/
         mkdir(self.file[0:self.file.rfind('/')])
         os.system('touch "' + self.file + '"')
 
@@ -148,7 +157,7 @@ class Config:
 
     def __init__(self, configName = 'config'):
         self.name = configName
-        self.sleepTime  : dict
+        self.sleepTime  : int
         self.files      : dict
         self.directories: dict
         self.filters    : list
@@ -249,7 +258,7 @@ class Config:
 class DropFilter:
     #   Global DropFilter attributes
     icon = '/usr/share/icons/hicolor/scalable/apps/DropFilter_icon.svg'
-    log = Log(Config.dir + '/tmp/', 'DropFilter', 0.6, True, True, icon)
+    log = Log(Config.dir + '/logs/', 'DropFilter', 0.6, True, True, icon)
     config = Config
 
 
