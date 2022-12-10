@@ -65,7 +65,7 @@ class Log:
         mkdir(self.file[0:self.file.rfind('/')])
         os.system('touch "' + self.file + '"')
 
-        text = '=| {} Log - {} |=\nv{}\n\n{}\nNotify: {}\n\n'.format(self.title, time.asctime(), self.version, self.file, self.notify)
+        text = '=| {} Log - {} |=\nVersion {}\n\n{}\nNotify: {}\n\n'.format(self.title, time.asctime(), self.version, self.file, self.notify)
         self << text    #   Append
 
         if(self.notify):
@@ -157,12 +157,12 @@ class Config:
     dir = os.getenv('HOME') + '/.dropfilter'
 
     def __init__(self, configName = 'config', log: Log = None):
+        self.log  = log if log else Log(Config.dir + '/logs/', str(configName).capitalize(), Version, False, False)
         self.name = configName
-        self.sleepTime  : int
-        self.files      : dict
-        self.directories: dict
-        self.filters    : list
-        self.log = log if log else Log(Config.dir + '/logs/', str(configName).capitalize(), Version, False, False)
+        self.dict = {   'SleepTime': None,
+                        'File':      None,
+                        'Directory': None,
+                        'Filter':    None   }
 
 
         #   Config file
@@ -171,7 +171,7 @@ class Config:
         #   Create default config file when it don't exists
         try:
             with open(str(Config.dir) + '/' + str(configName) + '.json', 'xt') as config:
-                configjson = {  'SleepTime':    20,
+                self.json = {   'SleepTime':    20,
 
                                 'File':     {   'Any':          [''],
                                                 'Code':         ['.cpp','.h','.py','.sh'],
@@ -190,9 +190,9 @@ class Config:
 
                                 'Filter':   [   [['Desktop'],   'PDF',  'DropFilter'],
                                                 [['Downloads'], 'Code', 'DropFilter']   ]
-                }
+                            }
 
-                config.write(json.dumps(configjson))
+                config.write(json.dumps(self.json))
                 config.close()
 
                 time.sleep(1)
@@ -201,8 +201,7 @@ class Config:
         except FileExistsError:
             time.sleep(1)
             self.log.log('config.json found.')
-        
-        self.load()
+            self.load()
         
     
     def load(self, config = ''):
@@ -212,30 +211,34 @@ class Config:
         try:
             with open(str(Config.dir) + '/' + str(self.name) + '.json') as config:
                 configjson = json.load(config)
-                loaded = 0
+                loaded     = 0
+
+                if(configjson == self.dict):
+                    config.close()
+                    return True
 
                 self.log << '\nConfig File: ' + json.dumps(configjson)
 
                 try:
-                    self.sleepTime = configjson['SleepTime']
+                    self.dict['SleepTime'] = configjson['SleepTime']
                     loaded += 1
                 except KeyError:
                     self.log.warn(self.name + '.json does not have a "SleepTime" key', 'KeyError')
                 
                 try:
-                    self.files = configjson['File']
+                    self.dict['File'] = configjson['File']
                     loaded += 1
                 except KeyError:
                     self.log.warn(self.name + '.json does not have a "File" key', 'KeyError')
                 
                 try:
-                    self.directories = configjson['Directory']
+                    self.dict['Directory'] = configjson['Directory']
                     loaded += 1
                 except KeyError:
                     self.log.warn(self.name + '.json does not have a "Directory" key', 'KeyError')
                 
                 try:
-                    self.filters = configjson['Filter']
+                    self.dict['Filter'] = configjson['Filter']
                     loaded += 1
                 except KeyError:
                     self.log.warn(self.name + '.json does not have a "Filter" key', 'KeyError')
@@ -243,9 +246,9 @@ class Config:
                 if(not loaded):
                     self.log.warn("Configuration Couldn't be Loaded", 'ConfigFile Error', True)
                 elif(loaded < 4):
-                    self.log.info('SleepTime: ' + str(self.sleepTime) + 's.\n', 'Configuration Partially Loaded', True)
+                    self.log.info('SleepTime: ' + str(self.sleepTime()) + 's.\n', 'Configuration Partially Loaded', True)
                 else:
-                    self.log.info('SleepTime: ' + str(self.sleepTime) + 's.\n', 'Configuration Loaded', True)
+                    self.log.info('SleepTime: ' + str(self.sleepTime()) + 's.\n', 'Configuration Loaded', True)
 
                 config.close()
                 return bool(loaded)
@@ -253,7 +256,19 @@ class Config:
         except FileNotFoundError:
             self.log.warn(self.name + '.json not found', self.name.capitalize())
             return False
+    
 
+    def sleepTime(self):
+        return self.dict['SleepTime']
+    
+    def files(self):
+        return self.dict['File']
+    
+    def directories(self):
+        return self.dict['Directory']
+    
+    def filters(self):
+        return self.dict['Filter']
 
 
 
@@ -280,11 +295,11 @@ class DropFilter:
     def scan(self, source, filter):
         for file in os.listdir(source):
             #   File ends with
-            for end in self.config.files[filter[1]]:
+            for end in self.config.files()[filter[1]]:
                 if(file.endswith(end)):
 
                     try:
-                        filter[2] = self.Directory[filter[2]]
+                        filter[2] = self.config.directories()[filter[2]]
 
                     finally:
                         #   Recursive make directory if destination don't exists
@@ -298,11 +313,11 @@ class DropFilter:
     #   Verify existence of files to been filtered
     def verify(self):
         #   Probably I'll rewrite this sequence, again...
-        for filter in self.config.filters:
+        for filter in self.config.filters():
             for source in filter[0]:
 
                 try:
-                    source = self.config.directories[source]
+                    source = self.config.directories()[source]
 
                 finally:
                     #   Path existence
@@ -316,9 +331,7 @@ class DropFilter:
     #   Verification loop, count = -1 means infinite
     def loop(self, count = -1):
         while(count):
-            if(not self.config.load()):
-                DropFilter.log.warn(self.config + " couldn't be loaded, using last config", self.config.name.capitalize())
-
+            self.config.load()
             self.verify()
 
             #   Countdown
@@ -329,7 +342,7 @@ class DropFilter:
             if(count):
                 if(count >= 0):
                     print('Countdown: ' + count)
-                time.sleep(self.config.sleepTime)
+                time.sleep(self.config.sleepTime())
 
 
 
