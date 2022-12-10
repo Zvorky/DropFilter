@@ -200,31 +200,43 @@ class Config:
         try:
             with open(Config.dir + '/' + self.name + '.json') as config:
                 configjson = json.load(config)
+                loaded = 0
+
                 DropFilter.log << '\nConfig File: ' + json.dumps(config)
 
                 try:
                     self.sleepTime = configjson['SleepTime']
+                    loaded += 1
                 except KeyError:
                     DropFilter.log.warn(self.name + '.json does not have a "SleepTime" key')
                 
                 try:
                     self.files = configjson['File']
+                    loaded += 1
                 except KeyError:
                     DropFilter.log.warn(self.name + '.json does not have a "File" key')
                 
                 try:
                     self.directories = configjson['Directory']
+                    loaded += 1
                 except KeyError:
                     DropFilter.log.warn(self.name + '.json does not have a "Directory" key')
                 
                 try:
                     self.filters = configjson['Filter']
+                    loaded += 1
                 except KeyError:
                     DropFilter.log.warn(self.name + '.json does not have a "Filter" key')
 
-                DropFilter.log.info('SleepTime: ' + str(self.sleepTime) + 's.', 'Configuration Loaded', True)
+                if(not loaded):
+                    DropFilter.log.warn("Configuration Couldn't be Loaded", True)
+                elif(loaded < 4):
+                    DropFilter.log.info('SleepTime: ' + str(self.sleepTime) + 's.', 'Configuration Partially Loaded', True)
+                else:
+                    DropFilter.log.info('SleepTime: ' + str(self.sleepTime) + 's.', 'Configuration Loaded', True)
+
                 config.close()
-                return True
+                return bool(loaded)
 
         except FileNotFoundError:
             DropFilter.log.warn(self.name + '.json not found')
@@ -293,8 +305,8 @@ class DropFilter:
     #   Verification loop, count = -1 means infinite
     def loop(self, count = -1):
         while(count):
-            if(not self.load()):
-                DropFilter.log.warn(self.config + " not found, using last config", self.config[1:self.config.rfind('/')].capitalize())
+            if(not self.config.load()):
+                DropFilter.log.warn(self.config + " couldn't be loaded, using last config", self.config.name.capitalize())
 
             print(self.load())
             self.verify()
