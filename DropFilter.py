@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 
 #	DropFilter.py
-#   Version 0.6
+Version   =   0.6
 
 ''' Enzo Zavorski Delevatti
 ||| @Zvorky
@@ -39,7 +39,7 @@ def mkdir(dir: str):
 
 #   Logger with Notify implementation
 class Log:
-    def __init__(self, path: str, title: str, version, console = True, notify = True, icon = ''):
+    def __init__(self, path: str, title: str, version, console = False, notify = False, icon = ''):
         self.title = title
         # self.subtitle = ''    # for future Log organization
         self.version = version
@@ -156,12 +156,14 @@ class Log:
 class Config:
     dir = os.getenv('HOME') + '/.dropfilter'
 
-    def __init__(self, configName = 'config'):
+    def __init__(self, configName = 'config', log: Log = None):
         self.name = configName
         self.sleepTime  : int
         self.files      : dict
         self.directories: dict
         self.filters    : list
+        self.log = log if log else Log(Config.dir + '/logs/', str(configName).capitalize(), Version, False, False)
+
 
         #   Config file
         print('\nChecking configuration file...\n\n')
@@ -194,11 +196,11 @@ class Config:
                 config.close()
 
                 time.sleep(1)
-                DropFilter.log.log(str(Config.dir) + '/' + str(configName) + '.json created.')
+                self.log.log(str(Config.dir) + '/' + str(configName) + '.json created.')
 
         except FileExistsError:
             time.sleep(1)
-            DropFilter.log.log('config.json found.')
+            self.log.log('config.json found.')
         
         self.load()
         
@@ -208,48 +210,48 @@ class Config:
             self.name = config
 
         try:
-            with open(Config.dir + '/' + self.name + '.json') as config:
+            with open(str(Config.dir) + '/' + str(self.name) + '.json') as config:
                 configjson = json.load(config)
                 loaded = 0
 
-                DropFilter.log << '\nConfig File: ' + json.dumps(config)
+                self.log << '\nConfig File: ' + json.dumps(configjson)
 
                 try:
                     self.sleepTime = configjson['SleepTime']
                     loaded += 1
                 except KeyError:
-                    DropFilter.log.warn(self.name + '.json does not have a "SleepTime" key')
+                    self.log.warn(self.name + '.json does not have a "SleepTime" key', 'KeyError')
                 
                 try:
                     self.files = configjson['File']
                     loaded += 1
                 except KeyError:
-                    DropFilter.log.warn(self.name + '.json does not have a "File" key')
+                    self.log.warn(self.name + '.json does not have a "File" key', 'KeyError')
                 
                 try:
                     self.directories = configjson['Directory']
                     loaded += 1
                 except KeyError:
-                    DropFilter.log.warn(self.name + '.json does not have a "Directory" key')
+                    self.log.warn(self.name + '.json does not have a "Directory" key', 'KeyError')
                 
                 try:
                     self.filters = configjson['Filter']
                     loaded += 1
                 except KeyError:
-                    DropFilter.log.warn(self.name + '.json does not have a "Filter" key')
+                    self.log.warn(self.name + '.json does not have a "Filter" key', 'KeyError')
 
                 if(not loaded):
-                    DropFilter.log.warn("Configuration Couldn't be Loaded", True)
+                    self.log.warn("Configuration Couldn't be Loaded", 'ConfigFile Error', True)
                 elif(loaded < 4):
-                    DropFilter.log.info('SleepTime: ' + str(self.sleepTime) + 's.', 'Configuration Partially Loaded', True)
+                    self.log.info('SleepTime: ' + str(self.sleepTime) + 's.\n', 'Configuration Partially Loaded', True)
                 else:
-                    DropFilter.log.info('SleepTime: ' + str(self.sleepTime) + 's.', 'Configuration Loaded', True)
+                    self.log.info('SleepTime: ' + str(self.sleepTime) + 's.\n', 'Configuration Loaded', True)
 
                 config.close()
                 return bool(loaded)
 
         except FileNotFoundError:
-            DropFilter.log.warn(self.name + '.json not found')
+            self.log.warn(self.name + '.json not found', self.name.capitalize())
             return False
 
 
@@ -257,10 +259,9 @@ class Config:
 
 #   Main DropFilter Class
 class DropFilter:
-    #   Global DropFilter attributes
-    icon = '/usr/share/icons/hicolor/scalable/apps/DropFilter_icon.svg'
-    log = Log(Config.dir + '/logs/', 'DropFilter', 0.6, True, True, icon)
-    config = Config
+    #       Global DropFilter attributes
+    log     = Log(Config.dir + '/logs/', 'DropFilter', Version, True, True, '/usr/share/icons/hicolor/scalable/apps/DropFilter_icon.svg')
+    config  = Config(log = log)
 
 
     def __init__(self, config = ''):
@@ -279,7 +280,7 @@ class DropFilter:
     def scan(self, source, filter):
         for file in os.listdir(source):
             #   File ends with
-            for end in self.File[filter[1]]:
+            for end in self.config.files[filter[1]]:
                 if(file.endswith(end)):
 
                     try:
@@ -297,11 +298,11 @@ class DropFilter:
     #   Verify existence of files to been filtered
     def verify(self):
         #   Probably I'll rewrite this sequence, again...
-        for filter in self.Filter:
+        for filter in self.config.filters:
             for source in filter[0]:
 
                 try:
-                    source = self.Directory[source]
+                    source = self.config.directories[source]
 
                 finally:
                     #   Path existence
@@ -318,7 +319,6 @@ class DropFilter:
             if(not self.config.load()):
                 DropFilter.log.warn(self.config + " couldn't be loaded, using last config", self.config.name.capitalize())
 
-            print(self.load())
             self.verify()
 
             #   Countdown
@@ -327,8 +327,9 @@ class DropFilter:
 
             #   Wait if still in loop
             if(count):
-                print(count)
-                time.sleep(self.SleepTime)
+                if(count >= 0):
+                    print('Countdown: ' + count)
+                time.sleep(self.config.sleepTime)
 
 
 
