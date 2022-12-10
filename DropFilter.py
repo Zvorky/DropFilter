@@ -48,17 +48,7 @@ class Log:
         self.icon = icon
         self.file = path + time.asctime() + '.txt'
 
-        text = '=| {} Log - {} |=\nv{}\n\n{}\nNotify: {}\n\n'.format(title, time.asctime(), version, self.file, notify)
-        self << text    #   Create, Append and Close file
-
-        if(notify):
-            Notify.init(title)
-            self.notify = Notify.Notification.new(title, 'v{} started!...'.format(version), icon)
-            self.notify.show()
-
-        if(console):
-            os.system('clear')
-            print(text)
+        self.makeLog()
     
 
     # #   Singleton implementation
@@ -70,23 +60,34 @@ class Log:
     #     return Log._instance
 
 
-    #   Append to log file
-    def __lshift__(self, text: str):
-        # try:
-        #     with open(self.file, 'a') as log:
-        #         log.write(text + '\n')
-        #
-        # except FileNotFoundError:
-
+    def makeLog(self):
         #   Make [home]/.dropfilter/logs/
         mkdir(self.file[0:self.file.rfind('/')])
         os.system('touch "' + self.file + '"')
 
-        with open(self.file, 'a') as log:
-            log.write(text + '\n')
+        text = '=| {} Log - {} |=\nv{}\n\n{}\nNotify: {}\n\n'.format(self.title, time.asctime(), self.version, self.file, self.notify)
+        self << text    #   Append
 
-        # finally:
-        log.close()
+        if(self.notify):
+            Notify.init(self.title)
+            self.notify = Notify.Notification.new(self.title, 'v{} started!...'.format(self.version), self.icon)
+            self.notify.show()
+
+        if(self.console):
+            os.system('clear')
+            print(text)
+
+
+    #   Append to log file
+    def __lshift__(self, text: str):
+        try:
+            with open(self.file, 'a') as log:
+                log.write(text + '\n')
+                log.close()
+        
+        except FileNotFoundError:
+            self.makeLog()
+            self << text
 
 
     #   Logs neutral message
