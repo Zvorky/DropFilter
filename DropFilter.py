@@ -1,14 +1,27 @@
 #! /usr/bin/python3
 
 #	DropFilter.py
-#   Version 0.6
+Version   =   0.6
 
-#	~ Enzo 'Zvorky' Delevatti
-#	August 2022
+''' Enzo Zavorski Delevatti
+||| @Zvorky
+\\\          ___,
+ \\\      .~´    `-,
+  \\°    /  _    _ \.
+   \°   ,\`|_|''|_|´\
+    °    /          /)   °
+        (\  ,    , .\`   |°
+         `) ;`,; `,^,)   ||°
+         ´,´  `,  `  `   |||
+                          \\\
+        December  2022     |||
+                           '''
+
 
 
 import os, sys, time, json
 from gi.repository import Notify, GLib
+
 
 
 #   Recursive make directory
@@ -26,7 +39,7 @@ def mkdir(dir: str):
 
 #   Logger with Notify implementation
 class Log:
-    def __init__(self, path: str, title: str, version, console = True, notify = True, icon = ''):
+    def __init__(self, path: str, title: str, version, console = False, notify = False, icon = ''):
         self.title = title
         # self.subtitle = ''    # for future Log organization
         self.version = version
@@ -35,36 +48,46 @@ class Log:
         self.icon = icon
         self.file = path + time.asctime() + '.txt'
 
-        text = '=| {} Log - {} |=\nv{}\n\n{}\nNotify: {}\n\n'.format(title, time.asctime(), version, self.file, notify)
-        self << text    #   Create, Append and Close file
+        self.make()
+    
 
-        if(notify):
-            Notify.init(title)
-            self.notify = Notify.Notification.new(title, 'v{} started!...'.format(version), icon)
+    # #   Singleton implementation
+    # def __new__(self, *args, **kwargs):
+    #     if not hasattr(Log, "_instance"):
+    #         with Log._instance_lock:
+    #             if not hasattr(Log, "_instance"):
+    #                 Log._instance = object.__new__(self)  
+    #     return Log._instance
+
+
+    def make(self):
+        #   Make [home]/.dropfilter/logs/
+        mkdir(self.file[0:self.file.rfind('/')])
+        os.system('touch "' + self.file + '"')
+
+        text = '=| {} Log - {} |=\nVersion {}\n\n{}\nNotify: {}\n\n'.format(self.title, time.asctime(), self.version, self.file, self.notify)
+        self << text    #   Append
+
+        if(self.notify):
+            Notify.init(self.title)
+            self.notify = Notify.Notification.new(self.title, 'v{} started!...'.format(self.version), self.icon)
             self.notify.show()
 
-        if(console):
+        if(self.console):
             os.system('clear')
             print(text)
 
 
     #   Append to log file
     def __lshift__(self, text: str):
-        # try:
-        #     with open(self.file, 'a') as log:
-        #         log.write(text + '\n')
-        #
-        # except FileNotFoundError:
-
-        #   Make [home]/.dropfilter/tmp/
-        mkdir(self.file[0:self.file.rfind('/')])
-        os.system('touch "' + self.file + '"')
-
-        with open(self.file, 'a') as log:
-            log.write(text + '\n')
-
-        # finally:
-        log.close()
+        try:
+            with open(self.file, 'a') as log:
+                log.write(text + '\n')
+                log.close()
+        
+        except FileNotFoundError:
+            self.make()
+            self << text
 
 
     #   Logs neutral message
@@ -130,133 +153,219 @@ class Log:
 
 
 
+class Config:
+    dir     = os.getenv('HOME') + '/.dropfilter'
+
+
+    def __init__(self, configName = 'config', log: Log = None):
+        self.log  = log if log else Log(Config.dir + '/logs/', str(configName).capitalize(), Version, False, False)
+        self.name = configName
+        self.dict = {   'SleepTime':    20,
+
+                        'File':     {   'Any':          [''],
+                                        'Code':         ['.cpp','.h','.py','.sh'],
+                                        'PDF':          ['.pdf'],
+                                        'Video':        ['.mp4','.mkv','.webm','.mov'],
+                                        'Audio':        ['.mp3','.ogg','.wav'],
+                                        'Image':        ['.gif','.pgn','.jpeg','jpg'],
+                                        'Vector':       ['.svg', '.eps', '.ai', '.cdr'],
+                                        'Compressed':   ['.zip','.rar','.tar','.gz','.xz','.tgz','.jar','.deb','.qdz','.run','.exe','.rpm'],
+                                        'Document':     ['.odt','.odp','.ods','.odf','.doc','.docx','.ppt','.pptx']         },
+
+                        'Directory':{   'DropFilter':   os.getenv('HOME') + '/.dropfilter',
+                                        'Dropbox':      os.getenv('HOME') + '/Dropbox',
+                                        'Desktop':      GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP),
+                                        'Downloads':    GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DOWNLOAD)    },
+
+                        'Filter':   [   [['Desktop'],   'PDF',  'DropFilter'],
+                                        [['Downloads'], 'Code', 'DropFilter']   ]   }
+
+        #   Config file
+        print('\nChecking configuration file...\n\n')
+        if(not self.make()):
+            time.sleep(1)
+            self.log.log('config.json found.')
+            self.load()
+
+
+    #   Create config file when it don't exists
+    def make(self):
+        try:
+            with open(str(Config.dir) + '/' + self.name + '.json', 'xt') as config:                    
+                config.write(json.dumps(self.dict))
+                config.close()
+
+                time.sleep(1)
+                self.log.log(str(Config.dir) + '/' + self.name + '.json created.')
+                return True
+
+        except FileExistsError:
+            return False
+    
+
+    #   save actual config into file
+    def save(self):
+        try:
+            with open(str(Config.dir) + '/' + self.name + '.json') as config:
+                configjson = json.load(config)
+
+                configjson['SleepTime'] = self.dict['SleepTime']
+                configjson['File']      = self.dict['File']
+                configjson['Directory'] = self.dict['Directory']
+                configjson['Filter']    = self.dict['Filter']
+
+                config.close()
+
+                with open(str(Config.dir) + '/' + self.name + '.json', 'w') as config:
+                    config.write(json.dumps(configjson))
+                    config.close()
+                    self.log.log(self.name + '.json saved.')
+        
+        except FileNotFoundError:
+            with open(str(Config.dir) + '/' + self.name + '.json', 'w') as config:
+                config.write(json.dumps(self.dict))
+                config.close()
+                self.log.log(self.name + '.json saved.')
+
+    
+    #   Loads a config file into config.dict
+    def load(self, config = ''):
+        if(config):
+            self.name = config
+
+        try:
+            with open(str(Config.dir) + '/' + str(self.name) + '.json') as config:
+                configjson = json.load(config)
+                loaded     = 0
+
+                if(self == configjson):
+                    config.close()
+                    return True
+
+                self.log << '\nConfig File: ' + json.dumps(configjson)
+
+                try:
+                    self.dict['SleepTime'] = configjson['SleepTime']
+                    loaded += 1
+                except KeyError:
+                    self.log.warn(self.name + '.json does not have a "SleepTime" key', 'KeyError', False)
+                
+                try:
+                    self.dict['File'] = configjson['File']
+                    loaded += 1
+                except KeyError:
+                    self.log.warn(self.name + '.json does not have a "File" key', 'KeyError', False)
+                
+                try:
+                    self.dict['Directory'] = configjson['Directory']
+                    loaded += 1
+                except KeyError:
+                    self.log.warn(self.name + '.json does not have a "Directory" key', 'KeyError', False)
+                
+                try:
+                    self.dict['Filter'] = configjson['Filter']
+                    loaded += 1
+                except KeyError:
+                    self.log.warn(self.name + '.json does not have a "Filter" key', 'KeyError', False)
+
+                if(not loaded):
+                    self.log.warn("Configuration Couldn't be Loaded", 'ConfigFile Error', True)
+                elif(loaded < 4):
+                    self.log.info('SleepTime: ' + str(self.sleepTime()) + 's.\n', 'Configuration Partially Loaded', True)
+                else:
+                    self.log.info('SleepTime: ' + str(self.sleepTime()) + 's.\n', 'Configuration Loaded', False)
+
+                config.close()
+                return loaded == 4
+
+        except FileNotFoundError:
+            self.log.warn(self.name + '.json not found', self.name.capitalize(), False)
+            return False
+    
+
+    #   Equals dictionary
+    def __eq__(self, another: dict):
+        try:
+            if(self.dict['SleepTime'] != another['SleepTime']):
+                return False
+            if(self.dict['File']      != another['File']):
+                return False
+            if(self.dict['Directory'] != another['Directory']):
+                return False
+            if(self.dict['Filter']    != another['Filter']):
+                return False
+            return True
+        except KeyError:
+            return False
+
+
+    def sleepTime(self):
+        return self.dict['SleepTime']
+    
+    def files(self):
+        return self.dict['File']
+    
+    def directories(self):
+        return self.dict['Directory']
+    
+    def filters(self):
+        return self.dict['Filter']
+
+
+
 #   Main DropFilter Class
 class DropFilter:
-    icon = '/usr/share/icons/hicolor/scalable/apps/DropFilter_icon.svg'
-    home = os.getenv('HOME')
-    configDir = home + '/.dropfilter'
-    config = '/config.json'
-    log = Log(configDir + '/tmp/', 'DropFilter', 0.6, True, True, icon)
+    #       Global DropFilter attributes
+    log     = Log(Config.dir + '/logs/', 'DropFilter', Version, True, True, '/usr/share/icons/hicolor/scalable/apps/DropFilter_icon.svg')
+    config  = Config(log = log)
 
 
     def __init__(self, config = ''):
 
         #   Main config file
-        if(config == ''):
-            config = DropFilter.config
+        if(not config):
+            self.config = DropFilter.config
         else:
-            DropFilter.log.info('New DropFilter instance initialized', config[1:config.rfind('.')])
+            self.config = Config(config)
+            DropFilter.log.info('New DropFilter instance initialized', config)
 
-        self.config = config
-
-        #   Log.__init__() already makes /.dropfilter and /.dropfilter/tmp directories when they don't exists
-
-        #   Config file
-        print('\nChecking configuration files...\n\n')
-
-        #   Default configuration (when config file do not exists)
-        self.SleepTime  = 20
-
-        self.File       = { 'Any':          [''],
-                            'Code':         ['.cpp','.h','.py','.sh'],
-                            'PDF':          ['.pdf'],
-                            'Video':        ['.mp4','.mkv','.webm','.mov'],
-                            'Audio':        ['.mp3','.ogg','.wav'],
-                            'Image':        ['.gif','.pgn','.jpeg','jpg'],
-                            'Vector':       ['.svg', '.eps', '.ai', '.cdr'],
-                            'Compressed':   ['.zip','.rar','.tar','.gz','.xz','.tgz','.jar','.deb','.qdz','.run','.exe','.rpm'],
-                            'Document':     ['.odt','.odp','.ods','.odf','.doc','.docx','.ppt','.pptx'] }
-
-        self.Directory  = { 'DropFilter':   DropFilter.home + '/.dropfilter',
-                            'Dropbox':      DropFilter.home + '/Dropbox',
-                            'Desktop':      GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP),
-                            'Downloads':    GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DOWNLOAD) }
-        
-        self.Filter     = [ [['Desktop'],   'PDF',  'DropFilter'],
-                            [['Downloads'], 'Code', 'DropFilter'] ]
-
-        #   Create default config file when not exists
-        try:
-            with open(DropFilter.configDir + '/config.json', 'xt') as config:
-                configjson = {  'SleepTime':    self.SleepTime,
-                                'File':         self.File,
-                                'Directory':    self.Directory,
-                                'Filter':       self.Filter     }
-
-                config.write(json.dumps(configjson))
-                config.close()
-
-                time.sleep(2.5)
-                DropFilter.log.log(DropFilter.configDir + '/config.json created.')
-
-        except FileExistsError:
-            time.sleep(2.5)
-            DropFilter.log.log('config.json found.')
-
-        #   Loads config to this instance
-        self.load(config)
+        #   Log.__init__() already makes /.dropfilter and /.dropfilter/tmp directories when they don't exist
 
 
-    #   Load Config
-    def load(self, config = ''):
+    #   Scan Source directory only
+    def scan(self, source, f):
+        filter = f
+        for file in os.listdir(source):
+            #   File ends with
+            for end in self.config.files()[filter[1]]:
+                if(file.endswith(end)):
 
-        if(config != ''):
-            self.config = config
+                    try:
+                        filter[2] = self.config.directories()[f[2]]
 
-        #   Consistency missing
-        try:
-            with open(DropFilter.configDir + self.config) as config:
-                configjson = json.load(config)
+                    finally:
+                        #   Recursive make directory if destination don't exists
+                        if(not os.path.exists(filter[2])):
+                            mkdir(filter[2])
+                        os.system('mv -n "' + source + '/' + file + '" "' + filter[2] + '/' + file + '"')
 
-                if(self.SleepTime != configjson['SleepTime']):
-                    self.SleepTime = configjson['SleepTime']
-
-                if(self.File != configjson['File']):
-                    self.File      = configjson['File']
-
-                if(self.Directory != configjson['Directory']):
-                    self.Directory = configjson['Directory']
-
-                if(self.Filter != configjson['Filter']):
-                    self.Filter    = configjson['Filter']
-                    DropFilter.log << '\nConfig File: ' + json.dumps(configjson)
-                    DropFilter.log.info('SleepTime: ' + str(self.SleepTime) + 's.', 'Configuration Loaded', True)
-                    
-                config.close()
-
-        except FileNotFoundError:
-            return False
-
-        finally:
-            return True
+                        DropFilter.log.info(file + ' moved to "' + filter[2], 'File Moved')
 
 
     #   Verify existence of files to been filtered
     def verify(self):
-        for filter in self.Filter:
-            for source in filter[0]:
+        #   Probably I'll rewrite this sequence, again...
+        for filter in self.config.filters():
+            for s in filter[0]:
+                source = s
 
                 try:
-                    source = self.Directory[source]
+                    source = self.config.directories()[s]
 
                 finally:
                     #   Path existence
                     if(os.path.exists(source)):
-                        for file in os.listdir(source):
-                            #   File ends with
-                            for end in self.File[filter[1]]:
-                                if(file.endswith(end)):
-
-                                    try:
-                                        filter[2] = self.Directory[filter[2]]
-
-                                    finally:
-                                        #   Recursive make directory if destination don't exists
-                                        if(not os.path.exists(filter[2])):
-                                            mkdir(filter[2])
-                                        os.system('mv -n "' + source + '/' + file + '" "' + filter[2] + '/' + file + '"')
-
-                                        DropFilter.log.info(file + ' moved to "' + filter[2], 'File Moved')
+                        self.scan(source, filter)
 
                     else:
                         DropFilter.log << source + " don't exists."
@@ -265,10 +374,9 @@ class DropFilter:
     #   Verification loop, count = -1 means infinite
     def loop(self, count = -1):
         while(count):
-            if(not self.load()):
-                DropFilter.log.warn(self.config + " not found, using last config", self.config[1:self.config.rfind('/')].capitalize())
-
-            print(self.load())
+            if(not self.config.load()):
+                self.config.save()
+            
             self.verify()
 
             #   Countdown
@@ -277,8 +385,9 @@ class DropFilter:
 
             #   Wait if still in loop
             if(count):
-                print(count)
-                time.sleep(self.SleepTime)
+                if(count >= 0):
+                    print('Countdown: ' + count)
+                time.sleep(self.config.sleepTime())
 
 
 

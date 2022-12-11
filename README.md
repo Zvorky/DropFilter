@@ -4,7 +4,6 @@ Organization by name, type, extension...
 
 ----
 
-
 ### <p align="center">=| Future Ideas |=</p>
 - Mobile App:  
 Notifications and File System with configured paths in the system.  
