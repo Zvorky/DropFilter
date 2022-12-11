@@ -154,15 +154,31 @@ class Log:
 
 
 class Config:
-    dir = os.getenv('HOME') + '/.dropfilter'
+    dir     = os.getenv('HOME') + '/.dropfilter'
+
 
     def __init__(self, configName = 'config', log: Log = None):
         self.log  = log if log else Log(Config.dir + '/logs/', str(configName).capitalize(), Version, False, False)
         self.name = configName
-        self.dict = {   'SleepTime': None,
-                        'File':      None,
-                        'Directory': None,
-                        'Filter':    None   }
+        self.dict = {   'SleepTime':    20,
+
+                        'File':     {   'Any':          [''],
+                                        'Code':         ['.cpp','.h','.py','.sh'],
+                                        'PDF':          ['.pdf'],
+                                        'Video':        ['.mp4','.mkv','.webm','.mov'],
+                                        'Audio':        ['.mp3','.ogg','.wav'],
+                                        'Image':        ['.gif','.pgn','.jpeg','jpg'],
+                                        'Vector':       ['.svg', '.eps', '.ai', '.cdr'],
+                                        'Compressed':   ['.zip','.rar','.tar','.gz','.xz','.tgz','.jar','.deb','.qdz','.run','.exe','.rpm'],
+                                        'Document':     ['.odt','.odp','.ods','.odf','.doc','.docx','.ppt','.pptx']         },
+
+                        'Directory':{   'DropFilter':   os.getenv('HOME') + '/.dropfilter',
+                                        'Dropbox':      os.getenv('HOME') + '/Dropbox',
+                                        'Desktop':      GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP),
+                                        'Downloads':    GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DOWNLOAD)    },
+
+                        'Filter':   [   [['Desktop'],   'PDF',  'DropFilter'],
+                                        [['Downloads'], 'Code', 'DropFilter']   ]   }
 
         #   Config file
         print('\nChecking configuration file...\n\n')
@@ -175,28 +191,7 @@ class Config:
     #   Create config file when it don't exists
     def make(self):
         try:
-            with open(str(Config.dir) + '/' + self.name + '.json', 'xt') as config:
-                self.dict = {   'SleepTime':    20,
-
-                                'File':     {   'Any':          [''],
-                                                'Code':         ['.cpp','.h','.py','.sh'],
-                                                'PDF':          ['.pdf'],
-                                                'Video':        ['.mp4','.mkv','.webm','.mov'],
-                                                'Audio':        ['.mp3','.ogg','.wav'],
-                                                'Image':        ['.gif','.pgn','.jpeg','jpg'],
-                                                'Vector':       ['.svg', '.eps', '.ai', '.cdr'],
-                                                'Compressed':   ['.zip','.rar','.tar','.gz','.xz','.tgz','.jar','.deb','.qdz','.run','.exe','.rpm'],
-                                                'Document':     ['.odt','.odp','.ods','.odf','.doc','.docx','.ppt','.pptx']         },
-
-                                'Directory':{   'DropFilter':   os.getenv('HOME') + '/.dropfilter',
-                                                'Dropbox':      os.getenv('HOME') + '/Dropbox',
-                                                'Desktop':      GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP),
-                                                'Downloads':    GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DOWNLOAD)    },
-
-                                'Filter':   [   [['Desktop'],   'PDF',  'DropFilter'],
-                                                [['Downloads'], 'Code', 'DropFilter']   ]
-                            }
-                    
+            with open(str(Config.dir) + '/' + self.name + '.json', 'xt') as config:                    
                 config.write(json.dumps(self.dict))
                 config.close()
 
@@ -210,12 +205,28 @@ class Config:
 
     #   save actual config into file
     def save(self):
-        with open(str(Config.dir) + '/' + self.name + '.json', 'w') as config:
-            config.write(json.dumps(self.dict))
-            config.close()
-            self.log.log(self.name + '.json saved.')
-            
+        try:
+            with open(str(Config.dir) + '/' + self.name + '.json') as config:
+                configjson = json.load(config)
+
+                configjson['SleepTime'] = self.dict['SleepTime']
+                configjson['File']      = self.dict['File']
+                configjson['Directory'] = self.dict['Directory']
+                configjson['Filter']    = self.dict['Filter']
+
+                config.close()
+
+                with open(str(Config.dir) + '/' + self.name + '.json', 'w') as config:
+                    config.write(json.dumps(configjson))
+                    config.close()
+                    self.log.log(self.name + '.json saved.')
         
+        except FileNotFoundError:
+            with open(str(Config.dir) + '/' + self.name + '.json', 'w') as config:
+                config.write(json.dumps(self.dict))
+                config.close()
+                self.log.log(self.name + '.json saved.')
+
     
     #   Loads a config file into config.dict
     def load(self, config = ''):
@@ -265,7 +276,7 @@ class Config:
                     self.log.info('SleepTime: ' + str(self.sleepTime()) + 's.\n', 'Configuration Loaded', True)
 
                 config.close()
-                return bool(loaded)
+                return loaded == 4
 
         except FileNotFoundError:
             self.log.warn(self.name + '.json not found', self.name.capitalize(), False)
