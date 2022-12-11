@@ -238,7 +238,7 @@ class Config:
                 configjson = json.load(config)
                 loaded     = 0
 
-                if(configjson == self.dict):
+                if(self == configjson):
                     config.close()
                     return True
 
@@ -282,6 +282,22 @@ class Config:
             self.log.warn(self.name + '.json not found', self.name.capitalize(), False)
             return False
     
+
+    #   Equals dictionary
+    def __eq__(self, another: dict):
+        try:
+            if(self.dict['SleepTime'] != another['SleepTime']):
+                return False
+            if(self.dict['File']      != another['File']):
+                return False
+            if(self.dict['Directory'] != another['Directory']):
+                return False
+            if(self.dict['Filter']    != another['Filter']):
+                return False
+            return True
+        except KeyError:
+            return False
+
 
     def sleepTime(self):
         return self.dict['SleepTime']
