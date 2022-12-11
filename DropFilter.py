@@ -248,32 +248,32 @@ class Config:
                     self.dict['SleepTime'] = configjson['SleepTime']
                     loaded += 1
                 except KeyError:
-                    self.log.warn(self.name + '.json does not have a "SleepTime" key', 'KeyError')
+                    self.log.warn(self.name + '.json does not have a "SleepTime" key', 'KeyError', False)
                 
                 try:
                     self.dict['File'] = configjson['File']
                     loaded += 1
                 except KeyError:
-                    self.log.warn(self.name + '.json does not have a "File" key', 'KeyError')
+                    self.log.warn(self.name + '.json does not have a "File" key', 'KeyError', False)
                 
                 try:
                     self.dict['Directory'] = configjson['Directory']
                     loaded += 1
                 except KeyError:
-                    self.log.warn(self.name + '.json does not have a "Directory" key', 'KeyError')
+                    self.log.warn(self.name + '.json does not have a "Directory" key', 'KeyError', False)
                 
                 try:
                     self.dict['Filter'] = configjson['Filter']
                     loaded += 1
                 except KeyError:
-                    self.log.warn(self.name + '.json does not have a "Filter" key', 'KeyError')
+                    self.log.warn(self.name + '.json does not have a "Filter" key', 'KeyError', False)
 
                 if(not loaded):
                     self.log.warn("Configuration Couldn't be Loaded", 'ConfigFile Error', True)
                 elif(loaded < 4):
                     self.log.info('SleepTime: ' + str(self.sleepTime()) + 's.\n', 'Configuration Partially Loaded', True)
                 else:
-                    self.log.info('SleepTime: ' + str(self.sleepTime()) + 's.\n', 'Configuration Loaded', True)
+                    self.log.info('SleepTime: ' + str(self.sleepTime()) + 's.\n', 'Configuration Loaded', False)
 
                 config.close()
                 return loaded == 4
