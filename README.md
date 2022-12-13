@@ -1,4 +1,4 @@
-# <p align="center"><img src="https://github.com/Zvorky/DropFilter/blob/main/DropFilter_icon.svg" width="44" height="44"> DropFilter</p>
+# <p align="center"><img src="https://github.com/Zvorky/DropFilter/blob/main/ArtWork/DropFilter_icon.svg" width="44" height="44"> DropFilter</p>
 A python code thats verify archives in a directory and moves them to another specified directory, filtering them.  
 Organization by name, type, extension...
 
