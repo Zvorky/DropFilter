@@ -333,23 +333,25 @@ class DropFilter:
 
 
     #   Scan Source directory only
-    def scan(self, source, f):
-        filter = f
+    def scan(self, source, filter):
         for file in os.listdir(source):
             #   File ends with
             for end in self.config.files()[filter[1]]:
                 if(file.endswith(end)):
 
                     try:
-                        filter[2] = self.config.directories()[f[2]]
+                        target = self.config.directories()[filter[2]]
+                    
+                    except:
+                        target = filter[2]
 
                     finally:
                         #   Recursive make directory if destination don't exists
-                        if(not os.path.exists(filter[2])):
-                            mkdir(filter[2])
-                        os.system('mv -n "' + source + '/' + file + '" "' + filter[2] + '/' + file + '"')
+                        if(not os.path.exists(target)):
+                            mkdir(target)
+                        os.system('mv -n "' + source + '/' + file + '" "' + target + '/' + file + '"')
 
-                        DropFilter.log.info(file + ' moved to "' + filter[2], 'File Moved')
+                        DropFilter.log.info(file + ' moved to "' + target, 'File Moved')
 
 
     #   Verify existence of files to been filtered
@@ -357,10 +359,12 @@ class DropFilter:
         #   Probably I'll rewrite this sequence, again...
         for filter in self.config.filters():
             for s in filter[0]:
-                source = s
-
+                
                 try:
                     source = self.config.directories()[s]
+
+                except:
+                    source = s
 
                 finally:
                     #   Path existence
