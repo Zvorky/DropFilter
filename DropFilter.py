@@ -41,7 +41,7 @@ def mkdir(dir: str):
 class Log:
     def __init__(self, path: str, title: str, version, console = False, notify = False, icon = ''):
         self.title = title
-        # self.subtitle = ''    # for future Log organization
+        self.subtitle = title
         self.version = version
         self.console = console
         self.notify = notify
@@ -88,11 +88,23 @@ class Log:
         except FileNotFoundError:
             self.make()
             self << text
+    
+
+    #   Set Subtitle
+    def __sub__(self, subtitle: str):
+        # if(not subtitle):
+        #     self.subtitle = self.title
+        #     return
+        
+        if(subtitle and self.subtitle != subtitle):
+            self.subtitle = subtitle
+            self << '\n -| ' + subtitle + ' |-'
+            print  ('\n\033[0;1;30;47m -| ' + subtitle + ' |-\033[2;7;37m \033[0m ')
 
 
     #   Logs neutral message
     def log(self, message: str, newNotify = False):
-        text = '~ | ' + time.asctime() + ' |: ' + message
+        text = '       | ' + time.asctime() + ' |: ' + message
 
         self << text
 
@@ -101,54 +113,57 @@ class Log:
 
         if(self.notify):
             if(newNotify):
-                self.notify = Notify.Notification.new(self.title, message, self.icon)
+                self.notify = Notify.Notification.new(self.subtitle, message, self.icon)
             else:
-                self.notify.update(self.title, message, self.icon)
+                self.notify.update(self.subtitle, message, self.icon)
             self.notify.show()
 
 
     #   Logs Informative message
-    def info(self, message: str, subtitle: str, newNotify = True):
-        self << '¡ ' + subtitle + ' | ' + time.asctime() + ' |: ' + message
+    def info(self, message: str, subtitle = '', newNotify = True):
+        self - subtitle
+        self << 'info   | ' + time.asctime() + ' |: ' + message
 
         if(self.console):
-            print('\033[0;1;30;47m ¡ ' + subtitle + ' \033[2;7;37m \033[0m | ' + time.asctime() + ' |: ' + message)
+            print('\033[0;1;30;47m ¡    \033[2;7;37m \033[0m| ' + time.asctime() + ' |: ' + message)
 
         if(self.notify):
             if(newNotify):
-                self.notify = Notify.Notification.new(subtitle, message, self.icon)
+                self.notify = Notify.Notification.new(self.subtitle, message, self.icon)
             else:
-                self.notify.update(subtitle, message, self.icon)
+                self.notify.update(self.subtitle, message, self.icon)
             self.notify.show()
 
 
     #   Logs Warning message
-    def warn(self, message: str, subtitle: str, newNotify = True):
-        self << '/!\\ ' + subtitle + ' | ' + time.asctime() + ' |: ' + message
+    def warn(self, message: str, subtitle = '', newNotify = True):
+        self - subtitle
+        self << 'warn   | ' + time.asctime() + ' |: ' + message
 
         if(self.console):
-            print('\033[0;5;1;30;43m /!\\ ' + subtitle + ' \033[2;7;33m \033[0m | ' + time.asctime() + ' |: ' + message)
+            print('\033[0;5;1;30;43m/!\\   \033[2;7;33m \033[0m| ' + time.asctime() + ' |: ' + message)
 
         if(self.notify):
             if(newNotify):
-                self.notify = Notify.Notification.new('⚠️ ' + subtitle, message, self.icon)
+                self.notify = Notify.Notification.new('⚠️ ' + self.subtitle, message, self.icon)
             else:
-                self.notify.update('⚠️ ' + subtitle, message, self.icon)
+                self.notify.update('⚠️ ' + self.subtitle, message, self.icon)
             self.notify.show()
 
 
     #   Logs Failure message
     def error(self, message: str, subtitle = '', newNotify = True):
-        self << 'ERROR ' + subtitle + ' | ' + time.asctime() + ' |: ' + message
+        self - subtitle
+        self << 'ERROR | ' + time.asctime() + ' |: ' + message
 
         if(self.console):
-            print('\033[0;1;30;41m ERROR ' + subtitle + ' \033[2;7;31m \033[0m | ' + time.asctime() + ' |: ' + message)
+            print('\033[0;1;30;41m ERROR | ' + time.asctime() + ' |:\033[2;7;31m \033[0m' + message)
 
         if(self.notify):
             if(newNotify):
-                self.notify = Notify.Notification.new('ERROR ' + subtitle, message, self.icon)
+                self.notify = Notify.Notification.new(self.subtitle + ' ERROR', message, self.icon)
             else:
-                self.notify.update('ERROR ' + subtitle, message, self.icon)
+                self.notify.update(self.subtitle + ' ERROR', message, self.icon)
             self.notify.show()
 
 
@@ -158,8 +173,10 @@ class Config:
 
 
     def __init__(self, configName = 'config', log: Log = None):
-        self.log  = log if log else Log(Config.dir + '/logs/', str(configName).capitalize(), Version, False, False)
         self.name = configName
+        if(configName == 'config'):
+            configName = 'Dropfilter'
+        self.log  = log if log else Log(Config.dir + '/logs/', str(configName).capitalize(), Version, False, False)
         self.dict = {   'SleepTime':    20,
 
                         'File':     {   'Any':          [''],
@@ -181,7 +198,7 @@ class Config:
                                         [['Downloads'], 'Code', 'DropFilter']   ]   }
 
         #   Config file
-        print('\nChecking configuration file...\n\n')
+        self.log - configName.capitalize()
         if(not self.make()):
             time.sleep(1)
             self.log.log('config.json found.')
@@ -248,38 +265,38 @@ class Config:
                     self.dict['SleepTime'] = configjson['SleepTime']
                     loaded += 1
                 except KeyError:
-                    self.log.warn(self.name + '.json does not have a "SleepTime" key', 'KeyError', False)
+                    self.log.warn(self.name + '.json does not have a "SleepTime" key', False)
                 
                 try:
                     self.dict['File'] = configjson['File']
                     loaded += 1
                 except KeyError:
-                    self.log.warn(self.name + '.json does not have a "File" key', 'KeyError', False)
+                    self.log.warn(self.name + '.json does not have a "File" key', False)
                 
                 try:
                     self.dict['Directory'] = configjson['Directory']
                     loaded += 1
                 except KeyError:
-                    self.log.warn(self.name + '.json does not have a "Directory" key', 'KeyError', False)
+                    self.log.warn(self.name + '.json does not have a "Directory" key', False)
                 
                 try:
                     self.dict['Filter'] = configjson['Filter']
                     loaded += 1
                 except KeyError:
-                    self.log.warn(self.name + '.json does not have a "Filter" key', 'KeyError', False)
+                    self.log.warn(self.name + '.json does not have a "Filter" key', False)
 
                 if(not loaded):
-                    self.log.warn("Configuration Couldn't be Loaded", 'ConfigFile Error', True)
+                    self.log.error("Configuration Couldn't be Loaded", True)
                 elif(loaded < 4):
-                    self.log.info('SleepTime: ' + str(self.sleepTime()) + 's.\n', 'Configuration Partially Loaded', True)
+                    self.log.warn('Configuration Partially Loaded, SleepTime: ' + str(self.sleepTime()) + 's.', True)
                 else:
-                    self.log.info('SleepTime: ' + str(self.sleepTime()) + 's.\n', 'Configuration Loaded', False)
+                    self.log.info('Configuration Loaded, SleepTime: ' + str(self.sleepTime()) + 's.', False)
 
                 config.close()
                 return loaded == 4
 
         except FileNotFoundError:
-            self.log.warn(self.name + '.json not found', self.name.capitalize(), False)
+            self.log.warn(self.name + '.json not found', False)
             return False
     
 
@@ -327,7 +344,7 @@ class DropFilter:
             self.config = DropFilter.config
         else:
             self.config = Config(config)
-            DropFilter.log.info('New DropFilter instance initialized', config)
+            DropFilter.log.info('New DropFilter instance initialized', config.capitalize())
 
         #   Log.__init__() already makes /.dropfilter and /.dropfilter/tmp directories when they don't exist
 
