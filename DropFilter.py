@@ -168,6 +168,11 @@ class Log:
             else:
                 self.notify.update(self.subtitle + ' ERROR', message, self.icon)
             self.notify.show()
+    
+    
+    #   Move the log folder to trash
+    def trash():
+        os.system('gio trash ' + Log.path)
 
 
 
