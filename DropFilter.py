@@ -39,6 +39,7 @@ def mkdir(dir: str):
 
 #   Logger with Notify implementation
 class Log:
+    path = ''
     def __init__(self, path: str, title: str, version, console = False, notify = False, icon = ''):
         self.title = title
         self.subtitle = title
@@ -47,6 +48,8 @@ class Log:
         self.notify = notify
         self.icon = icon
         self.file = path + time.asctime() + '.txt'
+
+        Log.path = path
 
         self.make()
     
@@ -61,7 +64,7 @@ class Log:
 
 
     def make(self):
-        #   Make [home]/.dropfilter/logs/
+        #   Make [home]/.log/dropfilter/
         mkdir(self.file[0:self.file.rfind('/')])
         os.system('touch "' + self.file + '"')
 
@@ -169,14 +172,14 @@ class Log:
 
 
 class Config:
-    dir     = os.getenv('HOME') + '/.dropfilter'
+    dir     = os.getenv('HOME') + '/.config/dropfilter'
 
 
     def __init__(self, configName = 'config', log: Log = None):
         self.name = configName
         if(configName == 'config'):
             configName = 'Dropfilter'
-        self.log  = log if log else Log(Config.dir + '/logs/', str(configName).capitalize(), Version, False, False)
+        self.log  = log if log else Log(os.getenv('HOME') + '/.log/dropfilter/', str(configName).capitalize(), Version, False, False)
         self.dict = {   'SleepTime':    20,
 
                         'File':     {   'Any':          [''],
@@ -189,13 +192,13 @@ class Config:
                                         'Compressed':   ['.zip','.rar','.tar','.gz','.xz','.tgz','.jar','.deb','.qdz','.run','.exe','.rpm'],
                                         'Document':     ['.odt','.odp','.ods','.odf','.doc','.docx','.ppt','.pptx']         },
 
-                        'Directory':{   'DropFilter':   os.getenv('HOME') + '/.dropfilter',
-                                        'Dropbox':      os.getenv('HOME') + '/Dropbox',
+                        'Directory':{   'Dropbox':      os.getenv('HOME') + '/Dropbox',
                                         'Desktop':      GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP),
-                                        'Downloads':    GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DOWNLOAD)    },
+                                        'Downloads':    GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DOWNLOAD),
+                                        'PDF_DL':       GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DOWNLOAD) + '/PDF'   },
 
-                        'Filter':   [   [['Desktop'],   'PDF',  'DropFilter'],
-                                        [['Downloads'], 'Code', 'DropFilter']   ]   }
+                        'Filter':   [   [['Desktop'],   'PDF', 'PDF_DL'],
+                                        [['Downloads'], 'PDF', 'PDF_DL']   ]   }
 
         #   Config file
         self.log - configName.capitalize()
@@ -207,6 +210,7 @@ class Config:
 
     #   Create config file when it don't exists
     def make(self):
+        mkdir(Config.dir)
         try:
             with open(str(Config.dir) + '/' + self.name + '.json', 'xt') as config:                    
                 config.write(json.dumps(self.dict))
@@ -333,7 +337,7 @@ class Config:
 #   Main DropFilter Class
 class DropFilter:
     #       Global DropFilter attributes
-    log     = Log(Config.dir + '/logs/', 'DropFilter', Version, True, True, '/usr/share/icons/hicolor/scalable/apps/DropFilter_icon.svg')
+    log     = Log(os.getenv('HOME') + '/.log/dropfilter/', 'DropFilter', Version, True, True, '/usr/share/icons/hicolor/scalable/apps/DropFilter_icon.svg')
     config  = Config(log = log)
 
 
@@ -346,7 +350,7 @@ class DropFilter:
             self.config = Config(config)
             DropFilter.log.info('New DropFilter instance initialized', config.capitalize())
 
-        #   Log.__init__() already makes /.dropfilter and /.dropfilter/tmp directories when they don't exist
+        #   Log.__init__() already makes /.config/dropfilter/ and /.log/dropfilter/ directories when they don't exist
 
 
     #   Scan Source directory only
