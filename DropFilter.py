@@ -178,23 +178,23 @@ class Config:
         self.log  = log
         self.dict = {   'SleepTime':    20,
 
-                        'File':     {   'Any':          [''],
-                                        'Code':         ['.cpp','.h','.py','.sh'],
-                                        'PDF':          ['.pdf'],
-                                        'Video':        ['.mp4','.mkv','.webm','.mov'],
-                                        'Audio':        ['.mp3','.ogg','.wav'],
-                                        'Image':        ['.gif','.pgn','.jpeg','jpg'],
-                                        'Vector':       ['.svg', '.eps', '.ai', '.cdr'],
-                                        'Compressed':   ['.zip','.rar','.tar','.gz','.xz','.tgz','.jar','.deb','.qdz','.run','.exe','.rpm'],
-                                        'Document':     ['.odt','.odp','.ods','.odf','.doc','.docx','.ppt','.pptx']         },
+                        'File':     {   'Any':          {'Contains':['']},
+                                        'Code':         {'Ends':    ['.cpp','.h','.py','.sh']},
+                                        'PDF':          {'Ends':    ['.pdf']},
+                                        'Video':        {'Ends':    ['.mp4','.mkv','.webm','.mov']},
+                                        'Audio':        {'Ends':    ['.mp3','.ogg','.wav']},
+                                        'Image':        {'Ends':    ['.gif','.pgn','.jpeg','jpg']},
+                                        'Vector':       {'Ends':    ['.svg', '.eps', '.ai', '.cdr']},
+                                        'Compressed':   {'Ends':    ['.zip','.rar','.tar','.gz','.xz','.tgz','.jar','.deb','.qdz','.run','.exe','.rpm']},
+                                        'Document':     {'Ends':    ['.odt','.odp','.ods','.odf','.doc','.docx','.ppt','.pptx']}         },
 
                         'Directory':{   'Dropbox':      os.getenv('HOME') + '/Dropbox',
                                         'Desktop':      GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP),
                                         'Downloads':    GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DOWNLOAD),
                                         'PDF_DL':       GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DOWNLOAD) + '/PDF'   },
 
-                        'Filter':   [   [['Desktop'],   'PDF', 'PDF_DL'],
-                                        [['Downloads'], 'PDF', 'PDF_DL']   ]   }
+                        'Filter':   [  {'Walk':         [['Desktop'],   'PDF', 'PDF_DL'],
+                                        'Only':         [['Downloads'], 'PDF', 'PDF_DL']}   ]   }
 
         if(self.log):
             self.log - configName.capitalize()
@@ -388,7 +388,6 @@ class DropFilter:
 
     #   Verify existence of directories to been filtered
     def verify(self):
-        #   Probably I'll rewrite this sequence, again...
         for filter in self.config.filters():
             for s in filter[0]:
                 
