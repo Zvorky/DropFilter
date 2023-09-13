@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="5wXKYRgwzkPQLhUQGjkd" name="Página-1">
-        <mxGraphModel dx="630" dy="485" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="none" math="0" shadow="0">
+        <mxGraphModel dx="522" dy="402" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="none" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -45,10 +45,10 @@
                         <mxPoint x="530" y="450" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="36" value="log" style="endArrow=diamondThin;endFill=0;endSize=24;html=1;edgeStyle=orthogonalEdgeStyle;" parent="1" source="2" target="6" edge="1">
+                <mxCell id="42" value="log" style="endArrow=open;endFill=1;endSize=12;html=1;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="6" target="2">
                     <mxGeometry width="160" relative="1" as="geometry">
-                        <mxPoint x="400" y="630" as="sourcePoint"/>
-                        <mxPoint x="420" y="550" as="targetPoint"/>
+                        <mxPoint x="410" y="530" as="sourcePoint"/>
+                        <mxPoint x="530" y="660" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
             </root>

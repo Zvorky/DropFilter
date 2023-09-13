@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 
 #	DropFilter.py
-Version   =   0.6
+Version   =   0.7
 
 ''' Enzo Zavorski Delevatti
 ||| @Zvorky
@@ -14,7 +14,7 @@ Version   =   0.6
          `) ;`,; `,^,)   ||°
          ´,´  `,  `  `   |||
                           \\\
-        December  2022     |||
+        September 2023     |||
                            '''
 
 
@@ -52,15 +52,6 @@ class Log:
         Log.path = path
 
         self.make()
-    
-
-    # #   Singleton implementation
-    # def __new__(self, *args, **kwargs):
-    #     if not hasattr(Log, "_instance"):
-    #         with Log._instance_lock:
-    #             if not hasattr(Log, "_instance"):
-    #                 Log._instance = object.__new__(self)  
-    #     return Log._instance
 
 
     def make(self):
@@ -177,14 +168,14 @@ class Log:
 
 
 class Config:
-    dir     = os.getenv('HOME') + '/.config/dropfilter'
+    dir = os.getenv('HOME') + '/.config/dropfilter'
 
 
     def __init__(self, configName = 'config', log: Log = None):
         self.name = configName
         if(configName == 'config'):
             configName = 'Dropfilter'
-        self.log  = log if log else Log(os.getenv('HOME') + '/.log/dropfilter/', str(configName).capitalize(), Version, False, False)
+        self.log  = log
         self.dict = {   'SleepTime':    20,
 
                         'File':     {   'Any':          [''],
@@ -205,11 +196,14 @@ class Config:
                         'Filter':   [   [['Desktop'],   'PDF', 'PDF_DL'],
                                         [['Downloads'], 'PDF', 'PDF_DL']   ]   }
 
+        if(self.log):
+            self.log - configName.capitalize()
+        
         #   Config file
-        self.log - configName.capitalize()
         if(not self.make()):
             time.sleep(1)
-            self.log.log('config.json found.')
+            if(self.log):
+                self.log.log('config.json found.')
             self.load()
 
 
@@ -222,7 +216,8 @@ class Config:
                 config.close()
 
                 time.sleep(1)
-                self.log.log(str(Config.dir) + '/' + self.name + '.json created.')
+                if(self.log):
+                    self.log.log(str(Config.dir) + '/' + self.name + '.json created.')
                 return True
 
         except FileExistsError:
@@ -245,13 +240,15 @@ class Config:
                 with open(str(Config.dir) + '/' + self.name + '.json', 'w') as config:
                     config.write(json.dumps(configjson))
                     config.close()
-                    self.log.log(self.name + '.json saved.')
+                    if(self.log):
+                        self.log.log(self.name + '.json saved.')
         
         except FileNotFoundError:
             with open(str(Config.dir) + '/' + self.name + '.json', 'w') as config:
                 config.write(json.dumps(self.dict))
                 config.close()
-                self.log.log(self.name + '.json saved.')
+                if(self.log):
+                    self.log.log(self.name + '.json saved.')
 
     
     #   Loads a config file into config.dict
@@ -268,44 +265,53 @@ class Config:
                     config.close()
                     return True
 
-                self.log << '\nConfig File: ' + json.dumps(configjson)
+                if(self.log):
+                    self.log << '\nConfig File: ' + json.dumps(configjson)
 
                 try:
                     self.dict['SleepTime'] = configjson['SleepTime']
                     loaded += 1
                 except KeyError:
-                    self.log.warn(self.name + '.json does not have a "SleepTime" key', False)
+                    if(self.log):
+                        self.log.warn(self.name + '.json does not have a "SleepTime" key', False)
                 
                 try:
                     self.dict['File'] = configjson['File']
                     loaded += 1
                 except KeyError:
-                    self.log.warn(self.name + '.json does not have a "File" key', False)
+                    if(self.log):
+                        self.log.warn(self.name + '.json does not have a "File" key', False)
                 
                 try:
                     self.dict['Directory'] = configjson['Directory']
                     loaded += 1
                 except KeyError:
-                    self.log.warn(self.name + '.json does not have a "Directory" key', False)
+                    if(self.log):
+                        self.log.warn(self.name + '.json does not have a "Directory" key', False)
                 
                 try:
                     self.dict['Filter'] = configjson['Filter']
                     loaded += 1
                 except KeyError:
-                    self.log.warn(self.name + '.json does not have a "Filter" key', False)
+                    if(self.log):
+                        self.log.warn(self.name + '.json does not have a "Filter" key', False)
 
                 if(not loaded):
-                    self.log.error("Configuration Couldn't be Loaded", True)
+                    if(self.log):
+                        self.log.error("Configuration Couldn't be Loaded", True)
                 elif(loaded < 4):
-                    self.log.warn('Configuration Partially Loaded, SleepTime: ' + str(self.sleepTime()) + 's.', True)
+                    if(self.log):
+                        self.log.warn('Configuration Partially Loaded, SleepTime: ' + str(self.sleepTime()) + 's.', True)
                 else:
-                    self.log.info('Configuration Loaded, SleepTime: ' + str(self.sleepTime()) + 's.', False)
+                    if(self.log):
+                        self.log.info('Configuration Loaded, SleepTime: ' + str(self.sleepTime()) + 's.', False)
 
                 config.close()
                 return loaded == 4
 
         except FileNotFoundError:
-            self.log.warn(self.name + '.json not found', False)
+            if(self.log):
+                self.log.warn(self.name + '.json not found', False)
             return False
     
 
@@ -377,10 +383,10 @@ class DropFilter:
                             mkdir(target)
                         os.system('mv -n "' + source + '/' + file + '" "' + target + '/' + file + '"')
 
-                        DropFilter.log.info(file + ' moved to "' + target, 'File Moved')
+                        DropFilter.log.info(file + ' moved to ' + target, 'File Moved')
 
 
-    #   Verify existence of files to been filtered
+    #   Verify existence of directories to been filtered
     def verify(self):
         #   Probably I'll rewrite this sequence, again...
         for filter in self.config.filters():
