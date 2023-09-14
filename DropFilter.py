@@ -24,19 +24,6 @@ from gi.repository import Notify, GLib
 
 
 
-#   Recursive make directory
-def mkdir(dir: str):
-    if(not dir.rfind('/')):
-        dir += '/'
-
-    if(not os.path.exists(dir[0:dir.rfind('/')])):
-        mkdir(dir[0:dir.rfind('/')])
-
-    if(not os.path.exists(dir)):
-        os.system('mkdir "' + dir + '"')
-
-
-
 #   Logger with Notify implementation
 class Log:
     path = ''
@@ -56,7 +43,7 @@ class Log:
 
     def make(self):
         #   Make [home]/.log/dropfilter/
-        mkdir(self.file[0:self.file.rfind('/')])
+        os.system('mkdir -p "' + self.file[0:self.file.rfind('/')] + '"')
         os.system('touch "' + self.file + '"')
 
         text = '=| {} Log - {} |=\nVersion {}\n\n{}\nNotify: {}\n\n'.format(self.title, time.asctime(), self.version, self.file, self.notify)
@@ -209,7 +196,7 @@ class Config:
 
     #   Create config file when it don't exists
     def make(self):
-        mkdir(Config.dir)
+        os.sytem('mkdir -p "' + Config.dir + '"')
         try:
             with open(str(Config.dir) + '/' + self.name + '.json', 'xt') as config:                    
                 config.write(json.dumps(self.dict))
@@ -382,7 +369,7 @@ class DropFilter:
             finally:
                 #   Recursive make directory if destination don't exists
                 if(not os.path.exists(target)):
-                    mkdir(target)
+                    os.sytem('mkdir -p "' + target + '"')
                 
             for file in os.listdir(source):
                 for criteria in self.config.files()[f[1]]:
