@@ -398,10 +398,11 @@ class DropFilter:
                         else:
                             if(file.endswith(word)):
                                 self.action(source, file, target)
-                                
+
 
     def walk(self, source, filter):
-        pass
+        for dir in os.walk(source):
+            self.scan(dir[0], filter)
 
 
     #   Verify existence of directories to been filtered
