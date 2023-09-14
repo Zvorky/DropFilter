@@ -364,27 +364,41 @@ class DropFilter:
         #   Log.__init__() already makes /.config/dropfilter/ and /.log/dropfilter/ directories when they don't exist
 
 
+    #   File Action (By now, just Move without overwrite)
+    def action(self, source: str, file: str, target: str):
+        os.system('mv -n "' + source + '/' + file + '" "' + target + '/' + file + '"')
+        DropFilter.log.info(file + ' moved to ' + target, 'File Moved')
+
+
     #   Scan Source directory only
     def scan(self, source, filter):
-        for file in os.listdir(source):
-            #   File ends with
-            for end in self.config.files()[filter[1]]:
-                if(file.endswith(end)):
+        for scan in filter:
+            f = filter[scan]
 
-                    try:
-                        target = self.config.directories()[filter[2]]
-                    
-                    except:
-                        target = filter[2]
-
-                    finally:
-                        #   Recursive make directory if destination don't exists
-                        if(not os.path.exists(target)):
-                            mkdir(target)
-                        os.system('mv -n "' + source + '/' + file + '" "' + target + '/' + file + '"')
-
-                        DropFilter.log.info(file + ' moved to ' + target, 'File Moved')
-
+            try:
+                target = self.config.directories()[f[2]]    
+            except:
+                target = f[2]
+            finally:
+                #   Recursive make directory if destination don't exists
+                if(not os.path.exists(target)):
+                    mkdir(target)
+                
+            for file in os.listdir(source):
+                for criteria in self.config.files()[f[1]]:
+                    for word in self.config.files()[f[1]]:
+                        if(criteria == 'Contains'):
+                            if(file.find(word) > -1):
+                                self.action(source, file, target)
+                        
+                        elif(criteria == 'Starts'):
+                            if(file.startswith(word)):
+                                self.action(source, file, target)
+                        
+                        else:
+                            if(file.endswith(word)):
+                                self.action(source, file, target)
+                                
 
     def walk(self, source, filter):
         pass

@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="5wXKYRgwzkPQLhUQGjkd" name="Página-1">
-        <mxGraphModel dx="522" dy="402" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="none" math="0" shadow="0">
+        <mxGraphModel dx="349" dy="579" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="none" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -29,15 +29,15 @@
                     <mxGeometry y="78" width="160" height="122" as="geometry"/>
                 </mxCell>
                 <mxCell id="10" value="DropFilter" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;rounded=0;" parent="1" vertex="1">
-                    <mxGeometry x="333" y="280" width="160" height="86" as="geometry">
+                    <mxGeometry x="333" y="280" width="160" height="120" as="geometry">
                         <mxRectangle x="334" y="280" width="100" height="30" as="alternateBounds"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="12" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;rounded=0;" parent="10" vertex="1">
                     <mxGeometry y="26" width="160" height="8" as="geometry"/>
                 </mxCell>
-                <mxCell id="13" value="+ scan(str, list)&#10;+ verify()&#10;+ loop(int)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rounded=0;" parent="10" vertex="1">
-                    <mxGeometry y="34" width="160" height="52" as="geometry"/>
+                <mxCell id="13" value="+ action(str, str)&#10;+ scan(str, list)&#10;+ walk(str, list)&#10;+ verify()&#10;+ loop(int)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rounded=0;" parent="10" vertex="1">
+                    <mxGeometry y="34" width="160" height="86" as="geometry"/>
                 </mxCell>
                 <mxCell id="34" value="config" style="endArrow=diamondThin;endFill=1;endSize=24;html=1;edgeStyle=orthogonalEdgeStyle;" parent="1" source="6" target="10" edge="1">
                     <mxGeometry width="160" relative="1" as="geometry">
@@ -45,7 +45,7 @@
                         <mxPoint x="530" y="450" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="42" value="log" style="endArrow=open;endFill=1;endSize=12;html=1;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="6" target="2">
+                <mxCell id="42" value="log" style="endArrow=open;endFill=1;endSize=12;html=1;edgeStyle=orthogonalEdgeStyle;" parent="1" source="6" target="2" edge="1">
                     <mxGeometry width="160" relative="1" as="geometry">
                         <mxPoint x="410" y="530" as="sourcePoint"/>
                         <mxPoint x="530" y="660" as="targetPoint"/>
