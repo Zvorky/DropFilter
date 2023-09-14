@@ -386,24 +386,32 @@ class DropFilter:
                         DropFilter.log.info(file + ' moved to ' + target, 'File Moved')
 
 
+    def walk(self, source, filter):
+        pass
+
+
     #   Verify existence of directories to been filtered
     def verify(self):
         for filter in self.config.filters():
-            for s in filter[0]:
-                
-                try:
-                    source = self.config.directories()[s]
+            for scan in filter:
+                for s in filter[scan][0]:
+                    
+                    try:
+                        source = self.config.directories()[s]
 
-                except:
-                    source = s
+                    except:
+                        source = s
 
-                finally:
-                    #   Path existence
-                    if(os.path.exists(source)):
-                        self.scan(source, filter)
+                    finally:
+                        #   Path existence
+                        if(os.path.exists(source)):
+                            if(scan == 'Walk'):
+                                self.walk(source, filter)
+                            else:
+                                self.scan(source, filter)
 
-                    else:
-                        DropFilter.log << source + " don't exists."
+                        else:
+                            DropFilter.log << source + " don't exists."
 
 
     #   Verification loop, count = -1 means infinite
