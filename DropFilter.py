@@ -371,7 +371,7 @@ class DropFilter:
                 
             for file in os.listdir(source):
                 for criteria in self.config.files()[f[1]]:
-                    for word in self.config.files()[f[1]]:
+                    for word in self.config.files()[f[1]][criteria]:
                         if(criteria == 'Contains'):
                             if(file.find(word) > -1):
                                 self.action(source, file, target)
