@@ -196,7 +196,7 @@ class Config:
 
     #   Create config file when it don't exists
     def make(self):
-        os.sytem('mkdir -p "' + Config.dir + '"')
+        os.system('mkdir -p "' + Config.dir + '"')
         try:
             with open(str(Config.dir) + '/' + self.name + '.json', 'xt') as config:                    
                 config.write(json.dumps(self.dict))
@@ -369,7 +369,7 @@ class DropFilter:
             finally:
                 #   Recursive make directory if destination don't exists
                 if(not os.path.exists(target)):
-                    os.sytem('mkdir -p "' + target + '"')
+                    os.system('mkdir -p "' + target + '"')
                 
             for file in os.listdir(source):
                 for criteria in self.config.files()[f[1]]:
