@@ -335,7 +335,7 @@ class Config:
 #   Main DropFilter Class
 class DropFilter:
     #       Global DropFilter attributes
-    log     = Log(os.getenv('HOME') + '/.log/dropfilter/', 'DropFilter', Version, True, True, '/usr/share/icons/hicolor/scalable/apps/DropFilter_icon.svg')
+    log     = Log(os.getenv('HOME') + '/.log/dropfilter/', 'DropFilter', Version, True, True, __file__[:__file__.rfind('/')]+'/ArtWork/DropFilter_icon.svg')
     config  = Config(log = log)
 
 
@@ -347,8 +347,6 @@ class DropFilter:
         else:
             self.config = Config(config)
             DropFilter.log.info('New DropFilter instance initialized', config.capitalize())
-
-        #   Log.__init__() already makes /.config/dropfilter/ and /.log/dropfilter/ directories when they don't exist
 
 
     #   File Action (By now, just Move without overwrite)
