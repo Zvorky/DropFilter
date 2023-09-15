@@ -157,6 +157,10 @@ class Log:
 class Config:
     dir = os.getenv('HOME') + '/.config/dropfilter'
 
+    #   Config Accepted Values
+    criterias = ['Contains', 'Starts', 'Ends']
+    scans = ['Only', 'Walk']
+
 
     def __init__(self, configName = 'config', log: Log = None):
         self.name = configName
@@ -329,6 +333,52 @@ class Config:
     
     def filters(self):
         return self.dict['Filter']
+
+    
+    def setSleepTime(self, sleepTime: int):
+        if(sleepTime <= 0):
+            return False
+        
+        self.dict['SleepTime'] = sleepTime
+        self.log.info('SleepTime set to {}.'.format(sleepTime))
+        return True
+    
+
+    def addFile(self, key: str, criteria: str, group: list):
+        if(criteria not in Config.criterias):
+            return False
+        
+        if(not group):
+            return False
+        
+        if(key in self.dict['File'].keys()):
+            if(criteria in self.dict['File'][key]):
+                self.dict['File'][key][criteria] += group
+            else:
+                self.dict['File'][key][criteria] = group
+        else:
+            self.dict['File'][key] = {criteria: group}
+        
+        self.log.info('Added {} file group.'.format(key))
+        return True
+    
+
+    #   Remove a entire File Group or just a Criteria from a File Group
+    def removeFile(self, key: str, criteria: str | None = None):
+        if(key not in self.dict['File'].keys()):
+            return False
+        
+        if(criteria):
+            if(criteria not in self.dict['File'][key]):
+                return False
+            
+            self.dict['File'][key].pop(criteria)
+            self.log.info('{} criteria {} removed.'.format(key, criteria))
+            return True
+
+        self.dict['File'].pop(key)
+        self.log.info('File Group {} removed.'.format(key))
+        return True
 
 
 
