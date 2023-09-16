@@ -203,7 +203,7 @@ class Config:
         os.system('mkdir -p "' + Config.dir + '"')
         try:
             with open(str(Config.dir) + '/' + self.name + '.json', 'xt') as config:                    
-                config.write(json.dumps(self.dict))
+                config.write(json.dumps(self.dict, indent = 4))
                 config.close()
 
                 time.sleep(1)
@@ -229,14 +229,14 @@ class Config:
                 config.close()
 
                 with open(str(Config.dir) + '/' + self.name + '.json', 'w') as config:
-                    config.write(json.dumps(configjson))
+                    config.write(json.dumps(configjson, indent = 4))
                     config.close()
                     if(self.log):
                         self.log.log(self.name + '.json saved.')
         
         except FileNotFoundError:
             with open(str(Config.dir) + '/' + self.name + '.json', 'w') as config:
-                config.write(json.dumps(self.dict))
+                config.write(json.dumps(self.dict, indent = 4))
                 config.close()
                 if(self.log):
                     self.log.log(self.name + '.json saved.')
@@ -257,7 +257,7 @@ class Config:
                     return True
 
                 if(self.log):
-                    self.log << '\nConfig File: ' + json.dumps(configjson)
+                    self.log << '\nConfig File: ' + json.dumps(configjson, indent = 4)
 
                 try:
                     self.dict['SleepTime'] = configjson['SleepTime']
