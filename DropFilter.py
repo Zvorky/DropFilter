@@ -363,6 +363,49 @@ class Config:
         return True
     
 
+    def addDirectory(self, key: str, path: str):
+        if(key in self.directories.keys()):
+            return False
+        
+        if(not path):
+            return False
+        
+        self.dict['Directory'][key] = path
+        self.log.info('Added {} directory.'.format(key))
+        return True
+    
+
+    def addFilter(self, scan: str, source: str | list, filegroup: str | list, target: str):
+        if(scan not in Config.scans):
+            return False
+        
+        if(type(source) == str):
+            if('/' not in source):
+                if(source not in self.directories.keys()):
+                    return False
+        else:
+            for s in source:
+                if('/' not in s):
+                    if(s not in self.directories.keys()):
+                        return False
+        
+        if(type(filegroup) == str):
+            if(filegroup not in self.files.keys()):
+                return False
+        else:
+            for f in filegroup:
+                if(f not in self.files.keys()):
+                    return False
+        
+        if(type(target) == str):
+            if('/' not in target):
+                if(target not in self.directories.keys()):
+                    return False
+        
+        self.log('Added {} filter at {} targeting {}.'.format(filegroup, source, target))
+        return True
+    
+
     #   Remove a entire File Group or just a Criteria from a File Group
     def removeFile(self, key: str, criteria: str | None = None):
         if(key not in self.dict['File'].keys()):
@@ -378,6 +421,24 @@ class Config:
 
         self.dict['File'].pop(key)
         self.log.info('File Group {} removed.'.format(key))
+        return True
+    
+
+    def removeDirectory(self, key: str):
+        if(key not in self.directories.keys()):
+            return False
+
+        self.dict['Directory'].pop(key)
+        self.log.info('{} directory removed.'.format(key))
+        return True
+
+    
+    def removeFilter(self, id: int):
+        if(id < 0 or id >= len(self.filters())):
+            return False
+        
+        self.dict['Filter'].pop(id)
+        self.log.info('Filter id {} removed.'.format(id))
         return True
 
 
