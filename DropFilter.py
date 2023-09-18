@@ -446,7 +446,7 @@ class Config:
 #   Main DropFilter Class
 class DropFilter:
     #       Global DropFilter attributes
-    log     = Log(os.getenv('HOME') + '/.log/dropfilter/', 'DropFilter', Version, True, True, __file__[:__file__.rfind('/')]+'/ArtWork/DropFilter_icon.svg')
+    log     = Log(os.getenv('HOME') + '/.config/dropfilter/log/', 'DropFilter', Version, True, True, __file__[:__file__.rfind('/')]+'/ArtWork/DropFilter_icon.svg')
     config  = Config(log = log)
 
 
