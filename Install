@@ -14,7 +14,7 @@ path=''
 if [ $EUID -eq 0 ]; then
     path='/usr'
 else
-    read -p "No sudo, install DropFilter for current user only? (Y/N): " choice
+    read -p "No sudo, install DropFilter only for $USER? (Y/N): " choice
     if [[ $choice != [Yy]* ]]; then
         echo "Aborted."
         exit

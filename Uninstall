@@ -21,5 +21,10 @@ if [ -e $path/bin/DropFilter ]; then
 
     echo "DropFilter uninstalled."
 else
-    echo "DropFilter is not installed in $path/bin. Nothing to uninstall."
+    echo "DropFilter is not installed at $path/bin." 
+    if [ $path == '/usr' ]; then
+        echo "Try running without sudo."
+    else
+        echo "Try running with sudo."
+    fi
 fi
