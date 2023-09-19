@@ -1,6 +1,13 @@
 #!/bin/bash
 # DropFilter Installer
 
+if command -v DropFilter &> /dev/null; then
+    installed_path=$(command -v DropFilter)
+    echo "DropFilter is already installed at $installed_path."
+    echo "Aborted."
+    exit 1
+fi
+
 version=$(python3 -c "from DropFilter import Version; print(Version)")
 
 path=''
@@ -16,7 +23,7 @@ else
 fi
 
 cp DropFilter.py $path/bin/DropFilter
-echo "DropFilter.py installed."
+echo "DropFilter installed."
 
 mkdir -p $path/share/icons/hicolor/scalable/apps
 cp ArtWork/DropFilter_icon.svg $path/share/icons/hicolor/scalable/apps/DropFilter.svg
