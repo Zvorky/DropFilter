@@ -20,6 +20,8 @@ Version   =   0.7
 
 
 import os, sys, time, json
+from gi import require_version
+require_version('Notify', '0.7')
 from gi.repository import Notify, GLib
 
 
@@ -446,14 +448,19 @@ class Config:
 #   Main DropFilter Class
 class DropFilter:
     #       Global DropFilter attributes
-    log     = Log(os.getenv('HOME') + '/.config/dropfilter/log/', 'DropFilter', Version, True, True, __file__[:__file__.rfind('/')]+'/ArtWork/DropFilter_icon.svg')
-    config  = Config(log = log)
+    icon    = __file__[:__file__.rfind('/bin')]+'/share/icons/hicolor/scalable/apps/DropFilter.svg' if __file__.find('/bin') != -1 else __file__[:__file__.rfind('/')]+'/ArtWork/DropFilter_icon.svg'
+    log     = None
+    config  = None
 
 
-    def __init__(self, config = ''):
+    def __init__(self, config: str):
+        if(not DropFilter.log):
+            DropFilter.log = Log(os.getenv('HOME') + '/.config/dropfilter/log/', 'DropFilter', Version, True, True, DropFilter.icon)
 
         #   Main config file
         if(not config):
+            if(not DropFilter.config):
+                DropFilter.config = Config(log = DropFilter.log)
             self.config = DropFilter.config
         else:
             self.config = Config(config)
@@ -546,5 +553,5 @@ class DropFilter:
 
 
 if __name__ == '__main__':
-    main = DropFilter()
+    main = DropFilter('')
     main.loop()
