@@ -19,6 +19,8 @@ DropFilter is a Python project that simplifies file organization and movement wi
 
 ### <p align="center">Basic Usage</p>
 
+For DropFilter to start with the system, install it by running the "Install" script.
+
 1. Once you run DropFilter, it will generate a default config file at .config/dropfilter.
 2. Edit your config.json as you want, and save it.
 3. DropFilter will automatically reload the config file, so it will already being monitoring the specified directory and automatically organize files based on your settings.
