@@ -1,0 +1,25 @@
+#!/bin/bash
+# DropFilter Uninstaller
+
+path=''
+if [ $EUID -eq 0 ]; then
+    path='/usr'
+else
+    path=$HOME/.local
+fi
+
+if [ -e $path/bin/DropFilter ]; then
+    read -p "Are you sure you want to uninstall DropFilter? (Y/N): " confirm
+    if [[ $confirm != [Yy]* ]]; then
+        echo "Uninstall aborted."
+        exit 0
+    fi
+
+    rm -f $path/bin/DropFilter
+    rm -f $path/share/icons/hicolor/scalable/apps/DropFilter.svg
+    rm -f $path/share/applications/DropFilter.desktop
+
+    echo "DropFilter uninstalled."
+else
+    echo "DropFilter is not installed in $path/bin. Nothing to uninstall."
+fi
