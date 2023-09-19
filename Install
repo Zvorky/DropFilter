@@ -1,0 +1,55 @@
+#!/bin/bash
+# DropFilter Installer
+
+if command -v DropFilter &> /dev/null; then
+    installed_path=$(command -v DropFilter)
+    echo "DropFilter is already installed at $installed_path."
+    echo "Aborted."
+    exit 1
+fi
+
+version=$(python3 -c "from DropFilter import Version; print(Version)")
+
+path=''
+if [ $EUID -eq 0 ]; then
+    path='/usr'
+else
+    read -p "No sudo, install DropFilter only for $USER? (Y/N): " choice
+    if [[ $choice != [Yy]* ]]; then
+        echo "Aborted."
+        exit
+    fi
+    path=$HOME/.local
+fi
+
+cp DropFilter.py $path/bin/DropFilter
+echo "DropFilter installed."
+
+mkdir -p $path/share/icons/hicolor/scalable/apps
+cp ArtWork/DropFilter_icon.svg $path/share/icons/hicolor/scalable/apps/DropFilter.svg
+
+echo "Making .desktop file."
+touch $path/share/applications/DropFilter.desktop
+cat <<EOL > $path/share/applications/DropFilter.desktop
+[Desktop Entry]
+Encoding=UTF-8
+
+Name=DropFilter
+Comment=Version $version - Created by Enzo 'Zvorky' Delevatti
+Comment[pt_BR]=Versão $version - Criado por Enzo 'Zvorky' Delevatti
+
+GenericName=File Organizer
+GenericName[pt_BR]=Organizador de Arquivos
+
+Type=Application
+Categories=System;Files;
+
+Exec=DropFilter
+Terminal=false
+Icon=$path/share/icons/hicolor/scalable/apps/DropFilter.svg
+
+X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Delay=0
+EOL
+
+echo "Done!"
