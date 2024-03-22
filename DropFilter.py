@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 
 #	DropFilter.py
-Version   =   0.7
+Version   =   'dev-1.0'
 
 ''' Enzo Zavorski Delevatti
 ||| @Zvorky
@@ -14,7 +14,7 @@ Version   =   0.7
          `) ;`,; `,^,)   ||°
          ´,´  `,  `  `   |||
                           \\\
-        September 2023     |||
+          March 2024       |||
                            '''
 
 
@@ -469,43 +469,37 @@ class DropFilter:
 
     #   File Action (By now, just Move without overwrite)
     def action(self, source: str, file: str, target: str):
+        if(target in self.config.directories.keys()):
+            target = self.config.directories[target]
+
+        if(not os.path.exists(target)):
+            os.system('mkdir -p "' + target + '"')
+
         os.system('mv -n "' + source + '/' + file + '" "' + target + '/' + file + '"')
         DropFilter.log.info(file + ' moved to ' + target, 'File Moved')
 
 
     #   Scan Source directory only
-    def scan(self, source, filter):
-        for scan in filter:
-            f = filter[scan]
-
-            try:
-                target = self.config.directories()[f[2]]    
-            except:
-                target = f[2]
-            finally:
-                #   Recursive make directory if destination don't exists
-                if(not os.path.exists(target)):
-                    os.system('mkdir -p "' + target + '"')
-                
-            for file in os.listdir(source):
-                for criteria in self.config.files()[f[1]]:
-                    for word in self.config.files()[f[1]][criteria]:
-                        if(criteria == 'Contains'):
-                            if(file.find(word) > -1):
-                                self.action(source, file, target)
-                        
-                        elif(criteria == 'Starts'):
-                            if(file.startswith(word)):
-                                self.action(source, file, target)
-                        
-                        else:
-                            if(file.endswith(word)):
-                                self.action(source, file, target)
+    def scan(self, source, file_group, target):
+        for file in os.listdir(source):
+            for criteria in self.config.files()[file_group]:
+                for word in self.config.files()[file_group][criteria]:
+                    if(criteria == 'Contains'):
+                        if(file.find(word) > -1):
+                            self.action(source, file, target)
+                    
+                    elif(criteria == 'Starts'):
+                        if(file.startswith(word)):
+                            self.action(source, file, target)
+                    
+                    else: # criteria == 'Ends'
+                        if(file.endswith(word)):
+                            self.action(source, file, target)
 
 
-    def walk(self, source, filter):
+    def walk(self, source, file_group, target):
         for dir in os.walk(source):
-            self.scan(dir[0], filter)
+            self.scan(dir[0], file_group, target)
 
 
     #   Verify existence of directories to been filtered
@@ -524,9 +518,9 @@ class DropFilter:
                         #   Path existence
                         if(os.path.exists(source)):
                             if(scan == 'Walk'):
-                                self.walk(source, filter)
+                                self.walk(source, filter[scan][1], filter[scan][2])
                             else:
-                                self.scan(source, filter)
+                                self.scan(source, filter[scan][1], filter[scan][2])
 
                         else:
                             DropFilter.log << source + " don't exists."
