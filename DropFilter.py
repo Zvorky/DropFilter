@@ -502,37 +502,32 @@ class DropFilter:
             self.scan(dir[0], file_group, target)
 
 
-    #   Verify existence of directories to been filtered
-    def verify(self):
+    #   Execute all Filters from Config
+    def run_filters(self):
         for filter in self.config.filters():
             for scan in filter:
-                for s in filter[scan][0]:
+                for souce in filter[scan][0]:
+                    if(target in self.config.directories.keys()):
+                        target = self.config.directories[target]
                     
-                    try:
-                        source = self.config.directories()[s]
-
-                    except:
-                        source = s
-
-                    finally:
-                        #   Path existence
-                        if(os.path.exists(source)):
-                            if(scan == 'Walk'):
-                                self.walk(source, filter[scan][1], filter[scan][2])
-                            else:
-                                self.scan(source, filter[scan][1], filter[scan][2])
-
+                    #   Path existence
+                    if(os.path.exists(source)):
+                        if(scan == 'Walk'):
+                            self.walk(source, filter[scan][1], filter[scan][2])
                         else:
-                            DropFilter.log << source + " don't exists."
+                            self.scan(source, filter[scan][1], filter[scan][2])
+
+                    else:
+                        DropFilter.log << source + " don't exists."
 
 
-    #   Verification loop, count = -1 means infinite
+    #   Filter loop, count = -1 means infinite
     def loop(self, count = -1):
         while(count):
             if(not self.config.load()):
                 self.config.save()
             
-            self.verify()
+            self.run_filters()
 
             #   Countdown
             if(count > 0):
