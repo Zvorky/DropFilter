@@ -169,7 +169,9 @@ class Config:
         if(configName == 'config'):
             configName = 'Dropfilter'
         self.log  = log
-        self.dict = {   'SleepTime':    20,
+        self.dict = {   'Notify':       True,
+                        
+                        'SleepTime':    20,
 
                         'File':     {   'Any':          {'Contains':['']},
                                         'Code':         {'Ends':    ['.cpp','.h','.py','.sh']},
@@ -260,6 +262,12 @@ class Config:
 
                 if(self.log):
                     self.log << '\nConfig File: ' + json.dumps(configjson, indent = 4)
+
+                try:
+                    self.dict['Notify'] = configjson['Notify']
+                    loaded += 1
+                except KeyError:
+                    pass
 
                 try:
                     self.dict['SleepTime'] = configjson['SleepTime']
@@ -465,6 +473,10 @@ class DropFilter:
         else:
             self.config = Config(config)
             DropFilter.log.info('New DropFilter instance initialized', config.capitalize())
+        
+        # !!! This works, but is poorly implemented !!!
+        if(not self.config.dict['Notify']):
+            self.log.notify = False
 
 
     #   File Action (By now, just Move without overwrite)
