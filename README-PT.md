@@ -2,6 +2,9 @@
 
 O DropFilter é um projeto em Python que simplifica a organização e movimentação de arquivos em um diretório com base em critérios de filtragem personalizáveis. Esta ferramenta oferece uma maneira eficiente de gerenciar seus arquivos, ajudando a manter a ordem no seu sistema de arquivos.
 
+| 🇧🇷 PT | [LEIAME](/README-PT.md) |
+|-------|-------------------------|
+| 🇺🇸 EN | [README](/README.md)    |
 ----
 
 ### <p align="center">Recursos Principais</p>
