@@ -374,7 +374,7 @@ class Config:
     
 
     def addDirectory(self, key: str, path: str):
-        if(key in self.directories.keys()):
+        if(key in self.directories().keys()):
             return False
         
         if(not path):
@@ -391,12 +391,12 @@ class Config:
         
         if(type(source) == str):
             if('/' not in source):
-                if(source not in self.directories.keys()):
+                if(source not in self.directories().keys()):
                     return False
         else:
             for s in source:
                 if('/' not in s):
-                    if(s not in self.directories.keys()):
+                    if(s not in self.directories().keys()):
                         return False
         
         if(type(filegroup) == str):
@@ -409,7 +409,7 @@ class Config:
         
         if(type(target) == str):
             if('/' not in target):
-                if(target not in self.directories.keys()):
+                if(target not in self.directories().keys()):
                     return False
         
         self.log('Added {} filter at {} targeting {}.'.format(filegroup, source, target))
@@ -435,7 +435,7 @@ class Config:
     
 
     def removeDirectory(self, key: str):
-        if(key not in self.directories.keys()):
+        if(key not in self.directories().keys()):
             return False
 
         self.dict['Directory'].pop(key)
@@ -481,8 +481,8 @@ class DropFilter:
 
     #   File Action (By now, just Move without overwrite)
     def action(self, source: str, file: str, target: str):
-        if(target in self.config.directories.keys()):
-            target = self.config.directories[target]
+        if(target in self.config.directories().keys()):
+            target = self.config.directories()[target]
 
         if(not os.path.exists(target)):
             os.system('mkdir -p "' + target + '"')
@@ -518,9 +518,9 @@ class DropFilter:
     def run_filters(self):
         for filter in self.config.filters():
             for scan in filter:
-                for souce in filter[scan][0]:
-                    if(target in self.config.directories.keys()):
-                        target = self.config.directories[target]
+                for source in filter[scan][0]:
+                    if(source in self.config.directories().keys()):
+                        source = self.config.directories()[source]
                     
                     #   Path existence
                     if(os.path.exists(source)):
